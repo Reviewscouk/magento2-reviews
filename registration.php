@@ -1,6 +1,6 @@
 <?php
 \Magento\Framework\Component\ComponentRegistrar::register(
     \Magento\Framework\Component\ComponentRegistrar::MODULE,
-    'Reviewscouk_reviews',
+    'Reviewscouk_Reviews',
     __DIR__
 );

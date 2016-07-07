@@ -1,14 +1,18 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <tab id="reviewscouk" translate="label" sortOrder="200">
+        <label>Reviews.co.uk</label>
+    </tab>
     <system>
-        <section id="reviewscouk_reviews" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Reviews.co.uk</label>
-            <tab>customer</tab>
+        <section id="reviewscouk_reviews_setup" translate="label" type="text" sortOrder="100" showInDefault="1"
+                 showInWebsite="1" showInStore="1">
+            <label>Setup</label>
+            <tab>reviewcoul</tab>
             <resource>Reviewscouk_Reviews::settings</resource>
-            <group id="settings" translate="label" type="text" sortOrder="120" showInDefault="1" showInWebsite="1"
+            <group id="settings" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                    showInStore="1">
-                <label>Settings</label>
+                <label>Basic Settings</label>
                 <comment>
                     <![CDATA[
 						<div style="width:46%;float:left;padding-right:4%;border-right:1px solid #ccc;">
@@ -27,18 +31,52 @@
 						</div>
 						]]>
                 </comment>
-                <field id="api_key" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="api_key" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
                     <label>API Key:</label>
                     <validate>required-entry</validate>
                 </field>
-                <field id="store_id" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="store_id" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
                     <label>Store ID:</label>
                     <validate>required-entry</validate>
                 </field>
-                <field id="region" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="region" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
                     <label>Region:</label>
                     <source_model>Reviewscouk\Reviews\Model\Config\Source\Region</source_model>
                     <validate>required-entry</validate>
+                </field>
+            </group>
+        </section>
+        <section id="reviewscouk_reviews_automation" translate="label" type="text" sortOrder="200" showInDefault="1"
+                 showInWebsite="1" showInStore="1">
+            <group id="collection" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Review Collection</label>
+                <field id="product_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Queue Product Review Emails:</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="merchant_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Queue Merchant Review Emails:</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="product_feed" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Product Feed</label>
+                <comment>
+                    <![CDATA[
+        			<p>To sync your products to Reviews.co.uk you should enable your product feed. The feed will be available at: /reviews/index/feed and will be automatically added to your Reviews.co.uk account when you save these settings.</p>
+        			]]>
+                </comment>
+                <field id="product_feed_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Queue Merchant Review Emails:</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
         </section>

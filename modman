@@ -1,0 +1,7 @@
+# Directories
+etc/    etc/
+
+# Base Files
+composer.json   composer.json
+README.md   README.md
+registration.php    registration.php

@@ -14,8 +14,8 @@ class Region implements \Magento\Framework\Option\ArrayInterface {
     public function toOptionArray()
     {
         return array(
-            array('value' => 'UK', 'label'=>Mage::helper('adminhtml')->__('UK')),
-            array('value' => 'US', 'label'=>Mage::helper('adminhtml')->__('US')),
+            array('value' => 'UK', 'label'=>__('UK')),
+            array('value' => 'US', 'label'=>__('US'))
         );
     }
 
@@ -27,8 +27,8 @@ class Region implements \Magento\Framework\Option\ArrayInterface {
     public function toArray()
     {
         return array(
-            'UK' => Mage::helper('adminhtml')->__('UK'),
-            'US' => Mage::helper('adminhtml')->__('US'),
+            'UK' => __('UK'),
+            'US' => __('US')
         );
     }
 

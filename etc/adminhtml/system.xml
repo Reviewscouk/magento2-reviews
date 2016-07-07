@@ -8,7 +8,7 @@
         <section id="reviewscouk_reviews_setup" translate="label" type="text" sortOrder="100" showInDefault="1"
                  showInWebsite="1" showInStore="1">
             <label>Setup</label>
-            <tab>reviewcoul</tab>
+            <tab>reviewcouk</tab>
             <resource>Reviewscouk_Reviews::settings</resource>
             <group id="settings" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                    showInStore="1">
@@ -51,6 +51,8 @@
         </section>
         <section id="reviewscouk_reviews_automation" translate="label" type="text" sortOrder="200" showInDefault="1"
                  showInWebsite="1" showInStore="1">
+            <label>Automation</label>
+            <tab>reviewscouk</tab>
             <group id="collection" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
                    showInStore="1">
                 <label>Review Collection</label>

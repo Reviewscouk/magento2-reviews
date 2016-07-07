@@ -53,6 +53,7 @@
                  showInWebsite="1" showInStore="1">
             <label>Automation</label>
             <tab>reviewscouk</tab>
+            <resource>Reviewscouk_Reviews::automation</resource>
             <group id="collection" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
                    showInStore="1">
                 <label>Review Collection</label>

@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="reviewscouk_reviews" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Reviews.co.uk</label>
+            <tab>customer</tab>
+            <resource>Reviewscouk_Reviews::settings</resource>
+            <group id="settings" translate="label" type="text" sortOrder="120" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Settings</label>
+                <comment>
+                    <![CDATA[
+						<div style="width:46%;float:left;padding-right:4%;border-right:1px solid #ccc;">
+							<h3>Already a Reviews.co.uk Customer?</h3>
+
+							<p>To configure this plugin you need to have your API credentials, which can be found on your Reviews.co.uk dashboard.</p>
+
+							<p>Log into the <strong>Dashboard</strong> and go to <strong>Integration</strong> > <strong>API</strong></p>
+
+							<p>Copy the Store ID and API Key into <strong>API Settings</strong> section of this page.</p>
+						</div>
+						<div style="width:46%;float:right;">
+							<h3>Not a Reviews.co.uk Customer?</h3>
+
+							<p>You'll need to sign up for one of our packages at <a href="http://www.reviews.co.uk">Reviews.co.uk</a> or <a href="http://www.review.io">Review.io</a> to use this plugin.</p>
+						</div>
+						]]>
+                </comment>
+                <field id="api_key" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API Key:</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="store_id" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Store ID:</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="region" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Region:</label>
+                    <source_model>Reviewscouk\Reviews\Model\Config\Source\Region</source_model>
+                    <validate>required-entry</validate>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

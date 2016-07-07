@@ -1,7 +1,3 @@
-# Directories
-etc/    etc/
+# Modman configuration file
 
-# Base Files
-composer.json   composer.json
-README.md   README.md
-registration.php    registration.php
+/   app/code/Reviewscouk/Reviews

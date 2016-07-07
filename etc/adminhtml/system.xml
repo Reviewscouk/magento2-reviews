@@ -8,7 +8,7 @@
         <section id="reviewscouk_reviews_setup" translate="label" type="text" sortOrder="100" showInDefault="1"
                  showInWebsite="1" showInStore="1">
             <label>Setup</label>
-            <tab>reviewcouk</tab>
+            <tab>reviewscouk</tab>
             <resource>Reviewscouk_Reviews::settings</resource>
             <group id="settings" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                    showInStore="1">

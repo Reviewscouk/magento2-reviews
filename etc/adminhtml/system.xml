@@ -54,7 +54,7 @@
             <label>Automation</label>
             <tab>reviewscouk</tab>
             <resource>Reviewscouk_Reviews::automation</resource>
-            <group id="collection" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
+            <group id="collection" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                    showInStore="1">
                 <label>Review Collection</label>
                 <field id="product_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
@@ -62,7 +62,7 @@
                     <label>Queue Product Review Emails:</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="merchant_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                <field id="merchant_enabled" translate="label" type="select" sortOrder="15" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Queue Merchant Review Emails:</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -80,6 +80,30 @@
                        showInWebsite="1" showInStore="1">
                     <label>Queue Merchant Review Emails:</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+        </section>
+        <section id="reviewscouk_reviews_onpage" translate="label" type="text" sortOrder="300" showInDefault="1"
+                 showInWebsite="1" showInStore="1">
+            <label>On Page Content</label>
+            <tab>reviewscouk</tab>
+            <resource>Reviewscouk_Reviews::onpage</resource>
+            <group id="widget" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Product Reviews Widget</label>
+                <field id="product_widget_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Display Reviews Widget on Product Pages?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="product_widget_colour" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
+                    <label>Widget Hex Colour:</label>
+                </field>
+                <field id="product_widget_version" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Display Reviews Widget on Product Pages?</label>
+                    <source_model>Reviewscouk\Reviews\Model\Config\Source\Widgetversion</source_model>
                 </field>
             </group>
         </section>

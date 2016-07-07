@@ -131,9 +131,21 @@
                 <label>Settings</label>
                 <field id="use_grouped_skus" translate="label" type="select" sortOrder="10" showInDefault="1"
                        showInWebsite="1" showInStore="1">
-                    <label>Use Grouped Product</label>
+                    <label>Use Grouped Product SKUs</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+            </group>
+            <group id="support" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Support</label>
+                <comment>
+                    <![CDATA[
+						<h3>Need some Help?</h3>
+
+						<p>If you are having any problems with this plugin please contact us at <a href="mailto:support@reviews.co.uk">support@reviews.co.uk</a></p>
+						<p>We also have live chat available on our website.</p>
+						]]>
+                </comment>
             </group>
         </section>
     </system>

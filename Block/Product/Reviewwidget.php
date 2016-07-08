@@ -65,7 +65,7 @@ class Reviewwidget extends \Magento\Framework\View\Element\Template
         return $widgetHtml;
     }
 
-    public function getData()
+    public function getSettings()
     {
         $data = array(
             'store_id' => $this->_configHelper->getStoreId($this->storeId),

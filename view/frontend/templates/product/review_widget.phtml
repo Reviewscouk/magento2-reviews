@@ -1,7 +1,7 @@
 <?php
 if ($this->isProductWidgetEnabled()){
     if($this->isIframeWidget()) {
-        $_data = $this->getData();
+        $_data = $this->getSettings();
         ?>
         <script src="https://<?php echo $_data['api_url']; ?>/product/dist.js"></script>
         <div id="widget"></div>

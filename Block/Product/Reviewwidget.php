@@ -14,8 +14,6 @@ class Reviewwidget extends Framework\View\Element\Template
     private $_registry;
     private $_store;
 
-    protected $storeId;
-
     public function __construct(Reviews\Helper\Config $config,
                                 Reviews\Helper\Data $dataHelper,
                                 Framework\Registry $registry,

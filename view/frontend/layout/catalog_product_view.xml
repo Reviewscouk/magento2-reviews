@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <body>
-    <referenceContainer name="product.info.main">
+    <referenceContainer name="content">
         <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
                name="product.review.widget"
                template="Reviewscouk_Reviews::product/review_widget.phtml"
-               after="-">
+               after="product.info.details">
         </block>
     </referenceContainer>
 </body>

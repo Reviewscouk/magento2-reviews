@@ -6,7 +6,7 @@ use Reviewscouk\Reviews as Reviews;
 use Magento\Framework as Framework;
 
 
-class Template extends Framework\View\Element\Template
+class Richsnippet extends Framework\View\Element\Template
 {
     private $_dataHelper;
     private $_configHelper;
@@ -15,7 +15,7 @@ class Template extends Framework\View\Element\Template
 
     public function __construct(Reviews\Helper\Config $config,
                                 Reviews\Helper\Data $dataHelper,
-                                Framework\View\Element\Context $context,
+                                Framework\View\Element\Template\Context $context,
                                 Framework\Registry $registry,
                                 array $data = [])
     {

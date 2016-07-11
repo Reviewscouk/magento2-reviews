@@ -48,8 +48,8 @@ class Richsnippet extends Framework\View\Element\Template
             $sku = implode(';', $sku);
         }
 
-        $region = $this->_configHelper->getRegion($this->store->getId());
-        $storeName = $this->_configHelper->getStoreId($this->store->getId());
+        $region = $this->_configHelper->getRegion($this->_store->getId());
+        $storeName = $this->_configHelper->getStoreId($this->_store->getId());
         $url = $region == 'us' ? 'https://widget.reviews.io/rich-snippet/dist.js' : 'https://widget.reviews.co.uk/rich-snippet/dist.js';
 
         $output = '<script src="' . $url . '"></script>';

@@ -2,26 +2,27 @@
 
 namespace Reviewscouk\Reviews\Helper;
 
-use \Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework as Framework;
+use Magento\Store as Store;
 
-class Config extends \Magento\Framework\App\Helper\AbstractHelper {
+class Config extends Framework\App\Helper\AbstractHelper {
 
-    const XML_CONFIG_REVIEWS_REGION = "reviewscouk_reviews_settings/api/reviews_region";
-    const XML_CONFIG_API_KEY = 'reviewscouk_reviews_settings/api/reviews_api_key';
-    const XML_CONFIG_STORE_ID = 'reviewscouk_reviews_settings/api/reviews_store_id';
-    const XML_CONFIG_PRODUCT_WIDGET_ENABLED = 'reviewscouk_reviews_settings/widget/product_widget_enabled';
-    const XML_CONFIG_PRODUCT_WIDGET_VERSION = 'reviewscouk_reviews_settings/widget/product_widget_version';
-    const XML_CONFIG_PRODUCT_WIDGET_COLOUR = 'reviewscouk_reviews_settings/widget/product_widget_colour';
-    const XML_CONFIG_MERCHANT_REVIEWS_ENABLED = 'reviewscouk_reviews_settings/general/reviews_merchant_enabled';
-    const XML_CONFIG_PRODUCT_REVIEWS_ENABLED = 'reviewscouk_reviews_settings/general/reviews_products_enabled';
-    const XML_CONFIG_MERCHANT_RICH_SNIPPETS_ENABLED = 'reviewscouk_reviews_settings/rich_snippet/rich_snippet_enabled';
-    const XML_CONFIG_PRODUCT_RICH_SNIPPETS_ENABLED = 'reviewscouk_reviews_settings/rich_snippet/product_rich_snippet_enabled';
-    const XML_CONFIG_PRODUCT_FEED_ENABLED = 'reviewscouk_reviews_settings/product_feed/product_feed';
-    const XML_CONFIG_USE_GROUP_SKU = "reviewscouk_reviews_settings/advanced/reviews_use_group_product_sku";
+    const XML_CONFIG_REVIEWS_REGION = "reviewscouk_reviews_setup/settings/reviews_region";
+    const XML_CONFIG_API_KEY = 'reviewscouk_reviews_setup/settings/reviews_api_key';
+    const XML_CONFIG_STORE_ID = 'reviewscouk_reviews_setup/settings/reviews_store_id';
+    const XML_CONFIG_PRODUCT_WIDGET_ENABLED = 'reviewscouk_reviews_onpage/widget/product_widget_enabled';
+    const XML_CONFIG_PRODUCT_WIDGET_VERSION = 'reviewscouk_reviews_onpage/widget/product_widget_version';
+    const XML_CONFIG_PRODUCT_WIDGET_COLOUR = 'reviewscouk_reviews_onpage/widget/product_widget_colour';
+    const XML_CONFIG_MERCHANT_REVIEWS_ENABLED = 'reviewscouk_reviews_automation/collection/reviews_merchant_enabled';
+    const XML_CONFIG_PRODUCT_REVIEWS_ENABLED = 'reviewscouk_reviews_automation/collection/reviews_products_enabled';
+    const XML_CONFIG_MERCHANT_RICH_SNIPPETS_ENABLED = 'reviewscouk_reviews_onpage/richsnippets/merchant_enabled';
+    const XML_CONFIG_PRODUCT_RICH_SNIPPETS_ENABLED = 'reviewscouk_reviews_onpage/richsnippets/product_enabled';
+    const XML_CONFIG_PRODUCT_FEED_ENABLED = 'reviewscouk_reviews_automation/product_feed/product_feed_enabled';
+    const XML_CONFIG_USE_GROUP_SKU = "reviewscouk_reviews_advanced/settings/used_grouped_skus";
 
     private $config;
 
-    public function __construct(ScopeConfigInterface $scopeConfigInterface)
+    public function __construct(Framework\App\Config\ScopeConfigInterface $scopeConfigInterface)
     {
         $this->config = $scopeConfigInterface;
     }
@@ -82,7 +83,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper {
      */
     private function getValue($code, $magentoStore) {
         //this->_scopeConfig->getValue('dev/debug/template_hints', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-        return $this->config->getValue($code, $magentoStore);
+        return $this->config->getValue($code, Store\Model\ScopeInterface::SCOPE_STORE, $magentoStore);
     }
 
 }

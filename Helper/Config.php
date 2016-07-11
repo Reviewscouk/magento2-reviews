@@ -7,9 +7,9 @@ use Magento\Store as Store;
 
 class Config extends Framework\App\Helper\AbstractHelper {
 
-    const XML_CONFIG_REVIEWS_REGION = "reviewscouk_reviews_setup/settings/reviews_region";
-    const XML_CONFIG_API_KEY = 'reviewscouk_reviews_setup/settings/reviews_api_key';
-    const XML_CONFIG_STORE_ID = 'reviewscouk_reviews_setup/settings/reviews_store_id';
+    const XML_CONFIG_REVIEWS_REGION = "reviewscouk_reviews_setup/settings/region";
+    const XML_CONFIG_API_KEY = 'reviewscouk_reviews_setup/settings/api_key';
+    const XML_CONFIG_STORE_ID = 'reviewscouk_reviews_setup/settings/store_id';
     const XML_CONFIG_PRODUCT_WIDGET_ENABLED = 'reviewscouk_reviews_onpage/widget/product_widget_enabled';
     const XML_CONFIG_PRODUCT_WIDGET_VERSION = 'reviewscouk_reviews_onpage/widget/product_widget_version';
     const XML_CONFIG_PRODUCT_WIDGET_COLOUR = 'reviewscouk_reviews_onpage/widget/product_widget_colour';
@@ -82,8 +82,8 @@ class Config extends Framework\App\Helper\AbstractHelper {
      * @return mixed
      */
     private function getValue($code, $magentoStore) {
-        //this->_scopeConfig->getValue('dev/debug/template_hints', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-        return $this->config->getValue($code, Store\Model\ScopeInterface::SCOPE_STORE, $magentoStore);
+        $value = $this->config->getValue($code, Store\Model\ScopeInterface::SCOPE_STORE, $magentoStore);
+        return $value;
     }
 
 }

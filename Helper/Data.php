@@ -2,81 +2,85 @@
 
 namespace Reviewscouk\Reviews\Helper;
 
-use Magento\Framework\Registry;
-use Magento\Store\Model\ScopeInterface;
+//use Magento\Framework\Registry;
+use Magento\Framework as Framework;
+use Reviewscouk\Reviews as Reviews;
+use Magento\Store as Store;
 
-class Data extends \Magento\Framework\App\Helper\AbstractHelper
+class Data extends Framework\App\Helper\AbstractHelper
 {
 
     private $_configHelper;
     private $_registry;
-    private $_scopeInterface;
+    private $_storeModel;
 
-    protected $storeId;
+    protected $store;
 
-    public function __construct(Config $config, Registry $registry, ScopeInterface $scopeInterface)
+    public function __construct(Framework\App\Helper\Context $context,
+                                Reviews\Helper\Config $config,
+                                Framework\Registry $registry,
+                                Store\Model\StoreManagerInterface $storeManagerInterface)
     {
         $this->_configHelper = $config;
         $this->_registry = $registry;
-        $this->_scopeInterface = $scopeInterface;
+        $this->_storeModel = $storeManagerInterface;
 
-        $this->storeId = $scopeInterface::SCOPE_STORE;
+        $this->store = $this->_storeModel->getStore();
+
+        parent::__construct($context);
     }
 
-    public function autoRichSnippet(){
-        $merchant_enabled  = $this->_configHelper->isMerchantRichSnippetsEnabled($this->storeId);
-        $product_enabled  = $this->_configHelper->isProductRichSnippetsEnabled($this->storeId);
+    public function autoRichSnippet()
+    {
+        $merchant_enabled = $this->_configHelper->isMerchantRichSnippetsEnabled($this->store->getId());
+        $product_enabled = $this->_configHelper->isProductRichSnippetsEnabled($this->store->getId());
         $current_product = $this->_registry->registry('current_product');
 
-        if($current_product && $product_enabled){
+        if ($current_product && $product_enabled) {
             $sku = $this->getProductSkus($current_product);
             return $this->getRichSnippet($sku);
-        }
-        elseif($merchant_enabled){
+        } elseif ($merchant_enabled) {
             return $this->getRichSnippet();
         }
         return '';
     }
 
-    public function getRichSnippet($sku=null){
-        if(isset($sku) && is_array($sku)){
-            $sku = implode(';',$sku);
+    public function getRichSnippet($sku = null)
+    {
+        if (isset($sku) && is_array($sku)) {
+            $sku = implode(';', $sku);
         }
 
-        $region = $this->_configHelper->getRegion($this->storeId);
-        $storeName = $this->_configHelper->getStoreId($this->storeId);
-        $url = $region == 'us'? 'https://widget.reviews.io/rich-snippet/dist.js' : 'https://widget.reviews.co.uk/rich-snippet/dist.js';
+        $region = $this->_configHelper->getRegion($this->store->getId());
+        $storeName = $this->_configHelper->getStoreId($this->store->getId());
+        $url = $region == 'us' ? 'https://widget.reviews.io/rich-snippet/dist.js' : 'https://widget.reviews.co.uk/rich-snippet/dist.js';
 
-        $output = '<script src="'.$url.'"></script>';
-        $output .= '<script>richSnippet({ store: "'.$storeName.'", sku:"'.$sku.'" })</script>';
+        $output = '<script src="' . $url . '"></script>';
+        $output .= '<script>richSnippet({ store: "' . $storeName . '", sku:"' . $sku . '" })</script>';
 
         return $output;
     }
 
-    /*
-     * Product Parameter: Mage::registry('current_product')
-     */
-    public function getProductSkus($product){
-        $sku      = $product->getSku();
+    public function getProductSkus($product)
+    {
+        $sku = $product->getSku();
         $type = $product->getTypeID();
 
         $productSkus = array($sku);
-
-        if($type == 'configurable'){
-            $usedProducts = $product->getTypeInstance() ->getUsedProducts();
-            foreach($usedProducts as $usedProduct){
+        if ($type == 'configurable') {
+            $usedProducts = $product->getTypeInstance()->getUsedProducts();
+            foreach ($usedProducts as $usedProduct) {
                 $productSkus[] = $usedProduct->getSku();
             }
         }
 
-        if($type == 'grouped'){
+        if ($type == 'grouped') {
             $usedProducts = $product->getTypeInstance()->getAssociatedProducts();
-            foreach($usedProducts as $usedProduct){
+            foreach ($usedProducts as $usedProduct) {
                 $productSkus[] = $usedProduct->getSku();
             }
         }
 
         return $productSkus;
     }
-
 }

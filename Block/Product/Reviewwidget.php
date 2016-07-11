@@ -2,36 +2,34 @@
 
 namespace Reviewscouk\Reviews\Block\Product;
 
-use Reviewscouk\Reviews\Helper\Config;
-use Magento\Framework\View\Element\Template\Context;
-use Reviewscouk\Reviews\Helper\Data;
-use Magento\Framework\Registry;
-use Magento\Store\Model\ScopeInterface;
+use Reviewscouk\Reviews as Reviews;
+use Magento\Framework as Framework;
+use Magento\Store as Store;
 
-class Reviewwidget extends \Magento\Framework\View\Element\Template
+class Reviewwidget extends Framework\View\Element\Template
 {
 
     private $_configHelper;
     private $_dataHelper;
     private $_registry;
-    private $_scopeInterface;
+    private $_store;
 
     protected $storeId;
 
-    public function __construct(Config $config,
-                                Context $context,
-                                Data $data,
-                                Registry $registry,
-                                ScopeInterface $scopeInterface)
+    public function __construct(Reviews\Helper\Config $config,
+                                Reviews\Helper\Data $dataHelper,
+                                Framework\Registry $registry,
+                                Framework\View\Element\Template\Context $context,
+                                array $data = []
+    )
     {
+        parent::__construct($context, $data);
+
         $this->_configHelper = $config;
-        $this->_dataHelper = $data;
+        $this->_dataHelper = $dataHelper;
         $this->_registry = $registry;
-        $this->_scopeInterface = $scopeInterface;
 
-        $this->storeId = $scopeInterface::SCOPE_STORE;
-
-        parent::__construct($context, array());
+        $this->_store = $this->_storeManager->getStore();
     }
 
     public function isProductWidgetEnabled()
@@ -41,7 +39,7 @@ class Reviewwidget extends \Magento\Framework\View\Element\Template
 
     public function isIframeWidget()
     {
-        $productWidgetVersion = $this->_configHelper->getProductWidgetVersion($this->storeId);
+        $productWidgetVersion = $this->_configHelper->getProductWidgetVersion($this->_store->getId());
 
         if ($productWidgetVersion == '2') {
             return false;
@@ -52,7 +50,7 @@ class Reviewwidget extends \Magento\Framework\View\Element\Template
 
     public function getStaticWidget()
     {
-        $store_id = $this->_configHelper->getStoreId($this->storeId);
+        $store_id = $this->_configHelper->getStoreId($this->_store->getId());
         $productSkus = $this->getProductSkus();
         $colour = $this->getWidgetColor();
 
@@ -68,7 +66,7 @@ class Reviewwidget extends \Magento\Framework\View\Element\Template
     public function getSettings()
     {
         $data = array(
-            'store_id' => $this->_configHelper->getStoreId($this->storeId),
+            'store_id' => $this->_configHelper->getStoreId($this->_store->getId()),
             'api_url' => $this->getWidgetURL(),
             'colour' => $this->getWidgetColor(),
         );
@@ -76,7 +74,7 @@ class Reviewwidget extends \Magento\Framework\View\Element\Template
         return $data;
     }
 
-    protected function getProductSkus()
+    public function getProductSkus()
     {
         $skus = array();
 
@@ -89,7 +87,7 @@ class Reviewwidget extends \Magento\Framework\View\Element\Template
 
     protected function getWidgetColor()
     {
-        $colour = $this->_configHelper->getProductWidgetColour($this->storeId);
+        $colour = $this->_configHelper->getProductWidgetColour($this->_store->getId());
         // people will sometimes put hash and sometimes they will forgot so we need to check for this error
         if (strpos($colour, '#') === FALSE) $colour = '#' . $colour;
         // checking to see if we hare a valid colour. If not then we change it to reviews default hex colour
@@ -99,7 +97,7 @@ class Reviewwidget extends \Magento\Framework\View\Element\Template
 
     protected function getWidgetURL()
     {
-        $region = $this->_configHelper->getRegion($this->storeId);
+        $region = $this->_configHelper->getRegion($this->_store->getId());
         $api_url = 'widget.reviews.co.uk';
         if ($region == 'US') $api_url = 'widget.review.io';
         return $api_url;

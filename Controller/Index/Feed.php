@@ -20,7 +20,7 @@ class Feed extends Framework\App\Action\Action
     public function __construct(Framework\App\Action\Context $context,
                                 Framework\Controller\Result\JsonFactory $resultJsonFactory,
                                 Framework\Cache\Core $core,
-                                Catalog\Mode\Product $product,
+                                Catalog\Model\Product $product,
                                 Catalog\Helper\Image $image,
                                 Store\Model\StoreManagerInterface $storeManagerInterface,
                                 Reviews\Helper\Config $config,

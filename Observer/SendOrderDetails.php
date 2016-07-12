@@ -4,7 +4,7 @@ namespace Reviewscouk\Reviews\Observer;
 
 use Magento\Framework as Framework;
 use Reviewscouk\Reviews as Reviews;
-use Mage\Catalog as Catalog;
+use Magento\Catalog as Catalog;
 use Magento\ConfigurableProduct as ConfigurableProduct;
 use Magento\Store as Store;
 

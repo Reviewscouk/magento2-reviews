@@ -5,7 +5,6 @@ namespace Reviewscouk\Reviews\Helper;
 //use Magento\Framework\Registry;
 use Magento\Framework as Framework;
 use Reviewscouk\Reviews as Reviews;
-use Magento\Store as Store;
 
 class Data extends Framework\App\Helper\AbstractHelper
 {

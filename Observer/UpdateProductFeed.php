@@ -21,7 +21,7 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
 
     }
 
-    public function after_save(){
+    public function execute(Framework\Event\Observer $observer){
         $setFeed = $this->_apiModel->apiPost('integration/set-feed', array(
             'url' => $this->_storeModel->getStore()->getBaseUrl(). 'reviews/index/feed',
             'format' => 'xml'

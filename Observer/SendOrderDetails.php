@@ -8,7 +8,7 @@ use Mage\Catalog as Catalog;
 use Magento\ConfigurableProduct as ConfigurableProduct;
 use Magento\Store as Store;
 
-class SendOrderDetails extends Framework\Event\ObserverInterface
+class SendOrderDetails implements Framework\Event\ObserverInterface
 {
 
     private $_configHelper;

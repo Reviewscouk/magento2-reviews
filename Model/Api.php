@@ -53,7 +53,8 @@ class Api extends Framework\Model\AbstractModel
 
     public function addStatusMessage($object, $task) {
         $object = json_decode($object);
-        if($object->status == 'error') {
+
+        if(isset($object->status) && $object->status == 'error') {
             $this->_messageInterface->addError($task . ' Error: ' . $object->message);
         }
     }

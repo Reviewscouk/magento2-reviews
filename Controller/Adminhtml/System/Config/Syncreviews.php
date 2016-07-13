@@ -100,7 +100,7 @@ class Syncreviews extends Backend\App\Action
                     $sql         = "Select * from " . $tableName . " WHERE detail = ? ";
                     $reviewExist = $connection->fetchRow($sql, $comment);
 
-                    $review      = (count($reviewExist) == 0) ? $this->_reviewFactory->create() : $this->_reviewFactory->load($reviewExist['review_id']);
+                    $review      = (count($reviewExist) == 0) ? $this->_reviewFactory->create() : $this->_reviewFactory->create()->load($reviewExist['review_id']);
 
                     $product_id = $this->_productModel
                         ->getIdBySku($row->sku);

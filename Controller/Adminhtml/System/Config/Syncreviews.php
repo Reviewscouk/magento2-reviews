@@ -60,7 +60,7 @@ class Syncreviews extends Backend\App\Action
                 $stores = $group->getStores();
                 foreach ($stores as $store) {
                     //$store is a store object
-                    $storeIds[] = $store->store_id;
+                    $storeIds[] = $store->getId();
                 }
             }
         }

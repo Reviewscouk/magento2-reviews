@@ -11,9 +11,8 @@
             var validationMessage = $('validation_result');
 
             new Ajax.Request('<?php /* @escapeNotVerified */ echo $block->getAjaxUrl() ?>', {
-                parameters: params,
                 onSuccess: function(response) {
-                    var result = '<?php /* @escapeNotVerified */ echo __('Error during VAT Number verification.') ?>';
+                    var result = '<?php /* @escapeNotVerified */ echo __('Error during Reviews Sync.') ?>';
                     try {
                         if (response.responseText.isJSON()) {
                             response = response.responseText.evalJSON();

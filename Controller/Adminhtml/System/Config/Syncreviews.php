@@ -12,7 +12,7 @@ class Syncreviews extends Backend\App\Action
 
 
     public function __construct(Backend\App\Action\Context $context,
-                                Controller\Result\JsonFactory $jsonFactory)
+                                Framework\Controller\Result\JsonFactory $jsonFactory)
     {
         parent::__construct($context);
 

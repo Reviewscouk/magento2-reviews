@@ -17,13 +17,15 @@ class Syncreviews extends Backend\App\Action
     private $_productModel;
     private $_reviewFactory;
     private $_ratingFactory;
+    private $_resourceConnection;
 
     public function __construct(Backend\App\Action\Context $context,
                                 Framework\Controller\Result\JsonFactory $jsonFactory,
                                 Catalog\Model\Product $product,
                                 Review\Model\ReviewFactory $reviewFactory,
                                 Review\Model\RatingFactory $ratingFactory,
-                                Store\Model\StoreManagerInterface $storeManagerInterface)
+                                Store\Model\StoreManagerInterface $storeManagerInterface,
+                                Framework\App\ResourceConnection $resourceConnection)
     {
         parent::__construct($context);
 
@@ -33,6 +35,8 @@ class Syncreviews extends Backend\App\Action
         $this->_ratingFactory = $ratingFactory;
         $this->_store = $storeManagerInterface->getStore();
         $this->_websites = $storeManagerInterface->getWebsites();
+
+        $this->_resourceConnection = $resourceConnection;
     }
 
     public function execute()
@@ -72,9 +76,6 @@ class Syncreviews extends Backend\App\Action
         $skipped = 0;
         $total = 0;
 
-        // Table Prefix
-        $prefix = Mage::getConfig()->getTablePrefix();
-
         try
         {
             $fetch = $this->fetchProductReviews();
@@ -90,8 +91,9 @@ class Syncreviews extends Backend\App\Action
 
                     $comment     = $row->review;
 
-                    $connection  = Mage::getSingleton('core/resource')->getConnection('core_read');
-                    $sql         = "Select * from " . $prefix . "review_detail WHERE detail = ? ";
+                    $connection  = $this->_resource->getConnection('core_read');
+                    $tableName   = $connection->getTableName('review_detail');
+                    $sql         = "Select * from " . $tableName . " WHERE detail = ? ";
                     $reviewExist = $connection->fetchRow($sql, $comment);
 
                     $review      = (count($reviewExist) == 0) ? $this->_reviewFactory->create() : $this->_reviewFactory->load($reviewExist['review_id']);

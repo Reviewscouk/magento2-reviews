@@ -38,7 +38,7 @@ class SyncReviews extends Config\Block\System\Config\Form\Field
             [
                 'button_label' => __($buttonLabel),
                 'html_id' => $element->getHtmlId(),
-                'ajax_url' => $this->_urlBuilder->getUrl('customer/system_config/syncreviews'),
+                'ajax_url' => $this->_urlBuilder->getUrl('reviewscouk/system_config/syncreviews'),
             ]
         );
 

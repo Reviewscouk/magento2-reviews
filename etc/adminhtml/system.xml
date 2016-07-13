@@ -90,7 +90,7 @@
                     <p>To sync Product Reviews from the Reviews.co.uk platform to your Magento store - click the button below;</p>
                     ]]>
                 </comment>
-                <field id="validate_vat_number" translate="button_label" sortOrder="62" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="sync" translate="button_label" sortOrder="62" showInDefault="1" showInWebsite="1" showInStore="0">
                     <button_label>Sync Product Reviews</button_label>
                     <frontend_model>Reviewscouk\Reviews\Block\Adminhtml\System\Config\SyncReviews</frontend_model>
                 </field>

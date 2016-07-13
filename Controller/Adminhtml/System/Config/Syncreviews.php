@@ -95,7 +95,7 @@ class Syncreviews extends Backend\App\Action
 
                     $comment     = $row->review;
 
-                    $connection  = $this->_resource->getConnection('core_read');
+                    $connection  = $this->_resourceConnection->getConnection('core_read');
                     $tableName   = $connection->getTableName('review_detail');
                     $sql         = "Select * from " . $tableName . " WHERE detail = ? ";
                     $reviewExist = $connection->fetchRow($sql, $comment);

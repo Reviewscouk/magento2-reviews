@@ -2,9 +2,10 @@
 
 namespace Reviewscouk\Reviews\Model\Config\Source;
 
-use Magento\Framework\App\ObjectManager;
+use Magento\Framework as Framework;
 
-class Widgetversion implements \Magento\Framework\Option\ArrayInterface {
+class Widgetversion implements Framework\Option\ArrayInterface
+{
 
     /**
      * Options getter
@@ -14,8 +15,8 @@ class Widgetversion implements \Magento\Framework\Option\ArrayInterface {
     public function toOptionArray()
     {
         return array(
-            array('value' => '1', 'label'=>__('Javascript Widget')),
-            array('value' => '2', 'label'=>__('Static Content Widget')),
+            array('value' => '1', 'label' => __('Javascript Widget')),
+            array('value' => '2', 'label' => __('Static Content Widget')),
         );
     }
 

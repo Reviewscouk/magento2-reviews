@@ -21,16 +21,17 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
 
     }
 
-    public function execute(Framework\Event\Observer $observer){
+    public function execute(Framework\Event\Observer $observer)
+    {
         $setFeed = $this->_apiModel->apiPost('integration/set-feed', array(
-            'url' => $this->_storeModel->getStore()->getBaseUrl(). 'reviews/index/feed',
+            'url' => $this->_storeModel->getStore()->getBaseUrl() . 'reviews/index/feed',
             'format' => 'xml'
         ));
         $this->_apiModel->addStatusMessage($setFeed, "Syncing Product Feed Configuration");
 
         $appInstalled = $this->_apiModel->apiPost('integration/app-installed', array(
             'platform' => 'magento',
-            'url' => isset($_SERVER['HTTP_HOST'])? $_SERVER['HTTP_HOST'] : ''
+            'url' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ''
         ));
         $this->_apiModel->addStatusMessage($appInstalled, "Communication");
 

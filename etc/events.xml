@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="sales_order_shipment_save_after">
-        <observer name="reviewscouk_reviews" instance="Reviewscouk\Reviews\Observer\SendOrderDetails" />
+        <observer name="reviewscouk_reviews" instance="Reviewscouk\Reviews\Observer\SendOrderDetails"/>
     </event>
     <event name="admin_system_config_changed_section_reviewscouk_reviews_automation">
-        <observer name="reviewscouk_reviews" instance="Reviewscouk\Reviews\Observer\UpdateProductFeed" />
+        <observer name="reviewscouk_reviews" instance="Reviewscouk\Reviews\Observer\UpdateProductFeed"/>
     </event>
 </config>

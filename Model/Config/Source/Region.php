@@ -2,9 +2,10 @@
 
 namespace Reviewscouk\Reviews\Model\Config\Source;
 
-use Magento\Framework\App\ObjectManager;
+use Magento\Framework as Framework;
 
-class Region implements \Magento\Framework\Option\ArrayInterface {
+class Region implements Framework\Option\ArrayInterface
+{
 
     /**
      * Options getter
@@ -14,8 +15,8 @@ class Region implements \Magento\Framework\Option\ArrayInterface {
     public function toOptionArray()
     {
         return array(
-            array('value' => 'UK', 'label'=>__('UK')),
-            array('value' => 'US', 'label'=>__('US'))
+            array('value' => 'UK', 'label' => __('UK')),
+            array('value' => 'US', 'label' => __('US'))
         );
     }
 

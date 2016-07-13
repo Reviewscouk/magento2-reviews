@@ -4,7 +4,6 @@ namespace Reviewscouk\Reviews\Block\Product;
 
 use Reviewscouk\Reviews as Reviews;
 use Magento\Framework as Framework;
-use Magento\Store as Store;
 
 class Reviewwidget extends Framework\View\Element\Template
 {

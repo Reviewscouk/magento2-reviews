@@ -42,8 +42,7 @@ class Feed extends Framework\App\Action\Action
         $store = $this->_storeModel->getStore();
 
         $productFeedEnabled = $this->_configHelper->isProductFeedEnabled($store->getId());
-        if ($productFeedEnabled)
-        {
+        if ($productFeedEnabled) {
             // TODO:- Implement caching of Feed
             //$saveCached = $this->_cache->load("feed");
             //if(!$saveCached)
@@ -55,13 +54,12 @@ class Feed extends Framework\App\Action\Action
                     <link>" . $store->getBaseUrl() . "</link>";
 
             $products = $this->_productModel->getCollection();
-            foreach ($products as $prod)
-            {
+            foreach ($products as $prod) {
                 $product = $this->_productModel->load($prod->getId());
 
                 $brand = $product->getAttributeText('manufacturer') ? $product->getAttributeText('manufacturer') : 'Not Available';
 
-                $price      = $product->getPrice();
+                $price = $product->getPrice();
                 $finalPrice = $product->getFinalPrice();
 
                 $productFeed .= "<item>
@@ -83,10 +81,8 @@ class Feed extends Framework\App\Action\Action
                         </g:shipping>";
 
                 $categoryCollection = $product->getCategoryCollection();
-                if (count($categoryCollection) > 0)
-                {
-                    foreach ($categoryCollection as $category)
-                    {
+                if (count($categoryCollection) > 0) {
+                    foreach ($categoryCollection as $category) {
                         $productFeed .= "<g:google_product_category><![CDATA[" . $category->getName() . "]]></g:google_product_category>";
                     }
                 }
@@ -95,12 +91,9 @@ class Feed extends Framework\App\Action\Action
                     $product->getId(),
                     $product->getStore()->getWebsiteId()
                 );
-                if ($stock->getIsInStock())
-                {
+                if ($stock->getIsInStock()) {
                     $productFeed .= "<g:availability>in stock</g:availability>";
-                }
-                else
-                {
+                } else {
                     $productFeed .= "<g:availability>out of stock</g:availability>";
                 }
 
@@ -119,9 +112,7 @@ class Feed extends Framework\App\Action\Action
 
             echo $productFeed;
             exit();
-        }
-        else
-        {
+        } else {
             echo "Product Feed is disabled.";
         }
     }

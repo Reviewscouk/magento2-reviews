@@ -5,7 +5,6 @@ namespace Reviewscouk\Reviews\Block;
 use Reviewscouk\Reviews as Reviews;
 use Magento\Framework as Framework;
 
-
 class Richsnippet extends Framework\View\Element\Template
 {
     private $_dataHelper;

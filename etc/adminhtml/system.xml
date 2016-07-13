@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="reviewscouk" translate="label" sortOrder="200">
+            <label>Reviews.co.uk</label>
+        </tab>
+        <section id="reviewscouk_reviews_setup" translate="label" type="text" sortOrder="100" showInDefault="1"
+                 showInWebsite="1" showInStore="1">
+            <label>Setup</label>
+            <tab>reviewscouk</tab>
+            <resource>Reviewscouk_Reviews::settings</resource>
+            <group id="settings" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Basic Settings</label>
+                <comment>
+                    <![CDATA[
+						<div style="width:46%;float:left;padding-right:4%;border-right:1px solid #ccc;">
+							<h3>Already a Reviews.co.uk Customer?</h3>
+
+							<p>To configure this plugin you need to have your API credentials, which can be found on your Reviews.co.uk dashboard.</p>
+
+							<p>Log into the <strong>Dashboard</strong> and go to <strong>Company Setup</strong> > <strong>Publish Reviews</strong> > <strong>Publishing API</strong></p>
+
+							<p>Copy the Store ID and API Key into <strong>API Settings</strong> section of this page.</p>
+						</div>
+						<div style="width:46%;float:right;">
+							<h3>Not a Reviews.co.uk Customer?</h3>
+
+							<p>You'll need to sign up for one of our packages at <a href="http://www.reviews.co.uk">Reviews.co.uk</a> or <a href="http://www.review.io">Review.io</a> to use this plugin.</p>
+						</div>
+						]]>
+                </comment>
+                <field id="api_key" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
+                    <label>API Key:</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="store_id" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
+                    <label>Store ID:</label>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="region" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
+                    <label>Region:</label>
+                    <source_model>Reviewscouk\Reviews\Model\Config\Source\Region</source_model>
+                    <validate>required-entry</validate>
+                </field>
+            </group>
+        </section>
+        <section id="reviewscouk_reviews_automation" translate="label" type="text" sortOrder="200" showInDefault="1"
+                 showInWebsite="1" showInStore="1">
+            <label>Automation</label>
+            <tab>reviewscouk</tab>
+            <resource>Reviewscouk_Reviews::automation</resource>
+            <group id="collection" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Review Collection</label>
+                <field id="product_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Queue Product Review Emails:</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="merchant_enabled" translate="label" type="select" sortOrder="15" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Queue Merchant Review Emails:</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="product_feed" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Product Feed</label>
+                <comment>
+                    <![CDATA[
+        			<p>To sync your products to Reviews.co.uk you should enable your product feed. The feed will be available at: /reviews/index/feed and will be automatically added to your Reviews.co.uk account when you save these settings.</p>
+        			]]>
+                </comment>
+                <field id="product_feed_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Queue Merchant Review Emails:</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+        </section>
+        <section id="reviewscouk_reviews_onpage" translate="label" type="text" sortOrder="300" showInDefault="1"
+                 showInWebsite="1" showInStore="1">
+            <label>On Page Content</label>
+            <tab>reviewscouk</tab>
+            <resource>Reviewscouk_Reviews::onpage</resource>
+            <group id="widget" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Product Reviews Widget</label>
+                <field id="product_widget_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Display Reviews Widget on Product Pages?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="product_widget_colour" translate="label" type="text" sortOrder="15" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Widget Hex Colour:</label>
+                </field>
+                <field id="product_widget_version" translate="label" type="select" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Display Reviews Widget on Product Pages?</label>
+                    <source_model>Reviewscouk\Reviews\Model\Config\Source\Widgetversion</source_model>
+                </field>
+            </group>
+            <group id="richsnippets" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Rich Snippets</label>
+                <field id="merchant_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable Merchant Rich Snippets?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="product_enabled" translate="label" type="select" sortOrder="15" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable Product Rich Snippets?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+        </section>
+        <section id="reviewscouk_reviews_advanced" translate="label" type="text" sortOrder="400" showInDefault="1"
+                 showInWebsite="1" showInStore="1">
+            <label>Advanced</label>
+            <tab>reviewscouk</tab>
+            <resource>Reviewscouk_Reviews::advanced</resource>
+            <group id="settings" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Settings</label>
+                <comment>
+                    <![CDATA[
+						<h3>Need some Help?</h3>
+
+						<p>If you are having any problems with this plugin please contact us at <a href="mailto:support@reviews.co.uk">support@reviews.co.uk</a></p>
+						<p>We also have live chat available on our website.</p>
+						]]>
+                </comment>
+                <field id="use_grouped_skus" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Use Grouped Product SKUs</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

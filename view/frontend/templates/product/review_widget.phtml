@@ -1,0 +1,39 @@
+<?php
+if ($this->isProductWidgetEnabled()){
+    if($this->isIframeWidget()) {
+        $_data = $this->getSettings();
+        $_skus = $this->getProductSkus();
+        ?>
+        <script src="https://<?php echo $_data['api_url']; ?>/product/dist.js"></script>
+        <div id="widget"></div>
+        <script type="text/javascript">
+            productWidget("widget", {
+                store: '<?php echo $_data['store_id']; ?>',
+                sku: '<?php echo implode(';', $_skus); ?>', // Multiple SKU"s Seperated by Semi-Colons
+                primaryClr: "<?php echo $_data['colour']; ?>",
+                neutralClr: "#EBEBEB",
+                buttonClr: "#EEE",
+                textClr: "#333",
+                tabClr: "#eee",
+                questions: true,
+                showTabs: true,
+                ratingStars: false,
+                showAvatars: true,
+                translateAverage: '<?php echo __("Average");?>',
+                translateReviews: '<?php echo __("Reviews");?>',
+                translateNoReviews: '<?php echo __("No Reviews");?>',
+                translateMoreRatings: '<?php echo __("More Ratings");?>',
+                translateNoComments: '<?php echo __("This review has no comments");?>',
+                translateReplyFrom: '<?php echo __("Reply from");?>',
+                translatePosted: '<?php echo __("Posted");?>',
+                translateWriteReview: '<?php echo __("Write a Review");?>',
+                translateShow: '<?php echo __("Show");?>',
+                translateDetails: '<?php echo __("Details");?>'
+            });
+        </script>
+        <?php
+    } else {
+        echo $this->getStaticWidget();
+    }
+}
+?>

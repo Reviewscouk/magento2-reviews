@@ -1,6 +1,6 @@
 <?php
 
-namespace Reviewscouk\Reviews;
+namespace Reviewscouk\Reviews\Controller\Adminhtml\System\Config;
 
 use Magento\Framework as Framework;
 use Magento\Backend as Backend;

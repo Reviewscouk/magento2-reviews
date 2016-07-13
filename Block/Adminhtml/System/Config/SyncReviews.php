@@ -1,6 +1,6 @@
 <?php
 
-namespace Reviewscouk\Reviews;
+namespace Reviewscouk\Reviews\Block\Adminhtml\System\Config;
 
 use Magento\Config as Config;
 

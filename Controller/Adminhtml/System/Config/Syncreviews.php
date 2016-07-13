@@ -7,11 +7,13 @@ use Magento\Framework as Framework;
 use Magento\Backend as Backend;
 use Magento\Store as Store;
 use Magento\Review as Review;
+use Reviewscouk\Reviews as Reviews;
 
 class Syncreviews extends Backend\App\Action
 {
 
-    protected $_resultJsonFactory;
+    private $_configHelper;
+    private $_resultJsonFactory;
     private $_store;
     private $_websites;
     private $_productModel;
@@ -20,6 +22,7 @@ class Syncreviews extends Backend\App\Action
     private $_resourceConnection;
 
     public function __construct(Backend\App\Action\Context $context,
+                                Reviews\Helper\Config $config,
                                 Framework\Controller\Result\JsonFactory $jsonFactory,
                                 Catalog\Model\Product $product,
                                 Review\Model\ReviewFactory $reviewFactory,
@@ -30,6 +33,7 @@ class Syncreviews extends Backend\App\Action
         parent::__construct($context);
 
         $this->_resultJsonFactory = $jsonFactory;
+        $this->_configHelper = $config;
         $this->_productModel = $product;
         $this->_reviewFactory = $reviewFactory;
         $this->_ratingFactory = $ratingFactory;
@@ -44,7 +48,7 @@ class Syncreviews extends Backend\App\Action
 
         $result = $this->_sync();
 
-        $resultJson = $this->resultJsonFactory->create();
+        $resultJson = $this->_resultJsonFactory->create();
         return $resultJson->setData([
             'valid' => (int)$result['is_valid'],
             'message' => $result['message'],
@@ -154,6 +158,58 @@ class Syncreviews extends Backend\App\Action
         }
 
         return $result;
+    }
+
+    public function fetchProductReviews($page = 1)
+    {
+
+        // Api Key
+        $apikey = $this->_configHelper->getApiKey($this->_store->getId());
+
+        // Get Region
+        $region = $this->_configHelper->getRegion($this->_store->getId());
+
+        // Get store
+        $storeName = $this->_configHelper->getStoreId($this->_store->getId());
+
+        if (empty($storeName))
+        {
+            throw new Exception('Please Configure API Credentials');
+        }
+
+        //TODO:- Use API model here?
+
+        try
+        {
+            $url = "http://api.reviews.co.uk";
+            if ($region == 'US') $url = "http://api.review.io"; // Checking if Region is US or not
+            $url .= "/product/reviews/all?store=" . $storeName . "&apikey=" . $apikey . "&page=" . $page;
+
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+            $data = curl_exec($ch);
+        } catch (Exception $e)
+        {
+            return false;
+        }
+
+        try
+        {
+            $response = json_decode($data);
+        } catch (Exception $e)
+        {
+            throw new Exception('Problem Parsing Data');
+        }
+
+        if (is_object($response))
+        {
+            return $response;
+        }
+        else
+        {
+            throw new Exception('Could not communicate to Reviews.co.uk API');
+        }
     }
 
     private function sortRatings($ratingText, $ratingNumber, $product_id, $connection, $prefix, $review)

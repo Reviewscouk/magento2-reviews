@@ -2,21 +2,37 @@
 
 namespace Reviewscouk\Reviews\Controller\Adminhtml\System\Config;
 
+use Magento\Catalog as Catalog;
 use Magento\Framework as Framework;
 use Magento\Backend as Backend;
+use Magento\Store as Store;
+use Magento\Review as Review;
 
 class Syncreviews extends Backend\App\Action
 {
 
     protected $_resultJsonFactory;
-
+    private $_store;
+    private $_websites;
+    private $_productModel;
+    private $_reviewFactory;
+    private $_ratingFactory;
 
     public function __construct(Backend\App\Action\Context $context,
-                                Framework\Controller\Result\JsonFactory $jsonFactory)
+                                Framework\Controller\Result\JsonFactory $jsonFactory,
+                                Catalog\Model\Product $product,
+                                Review\Model\ReviewFactory $reviewFactory,
+                                Review\Model\RatingFactory $ratingFactory,
+                                Store\Model\StoreManagerInterface $storeManagerInterface)
     {
         parent::__construct($context);
 
         $this->_resultJsonFactory = $jsonFactory;
+        $this->_productModel = $product;
+        $this->_reviewFactory = $reviewFactory;
+        $this->_ratingFactory = $ratingFactory;
+        $this->_store = $storeManagerInterface->getStore();
+        $this->_websites = $storeManagerInterface->getWebsites();
     }
 
     public function execute()
@@ -36,10 +52,10 @@ class Syncreviews extends Backend\App\Action
     {
         $result = array();
         // Getting the Store ID
-        $storeId = Mage::app()->getStore()->getId();
+        $storeId = $this->_store->getId();
 
         $storeIds = array(0);
-        foreach (Mage::app()->getWebsites() as $website) {
+        foreach ($this->_websites as $website) {
             foreach ($website->getGroups() as $group) {
                 $stores = $group->getStores();
                 foreach ($stores as $store) {
@@ -78,9 +94,10 @@ class Syncreviews extends Backend\App\Action
                     $sql         = "Select * from " . $prefix . "review_detail WHERE detail = ? ";
                     $reviewExist = $connection->fetchRow($sql, $comment);
 
-                    $review      = (count($reviewExist) == 0) ? Mage::getModel('review/review') : Mage::getModel('review/review')->load($reviewExist['review_id']);
+                    $review      = (count($reviewExist) == 0) ? $this->_reviewFactory->create() : $this->_reviewFactory->load($reviewExist['review_id']);
 
-                    $product_id = Mage::getModel("catalog/product")->getIdBySku($row->sku);
+                    $product_id = $this->_productModel
+                        ->getIdBySku($row->sku);
 
                     // Only Importing if the product exist on magento side
                     if ($product_id)
@@ -107,14 +124,17 @@ class Syncreviews extends Backend\App\Action
 
                             foreach ($ratings as $label => $value)
                             {
-                                $this->sortRatings($value->rating_text,$value->rating, $product_id, $connection, $prefix, $review);
+                                var_dump($label);
+                                var_dump($value);
+                                //$this->sortRatings($value->rating_text,$value->rating, $product_id, $connection, $prefix, $review);
+
                             }
 
-                            $review->aggregate();
                         }
                         else
                         {
-                            $this->sortRatings('Rating', $row->rating,$product_id, $connection, $prefix, $review);
+                            var_dumpp($row->ratings);
+                            //$this->sortRatings('Rating', $row->rating,$product_id, $connection, $prefix, $review);
 
                             $review->aggregate();
                         }
@@ -132,6 +152,11 @@ class Syncreviews extends Backend\App\Action
         }
 
         return $result;
+    }
+
+    private function sortRatings($ratingText, $ratingNumber, $product_id, $connection, $prefix, $review)
+    {
+
     }
 
 

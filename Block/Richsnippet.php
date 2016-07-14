@@ -12,12 +12,13 @@ class Richsnippet extends Framework\View\Element\Template
     private $_registry;
     private $_store;
 
-    public function __construct(Reviews\Helper\Config $config,
-                                Reviews\Helper\Data $dataHelper,
-                                Framework\View\Element\Template\Context $context,
-                                Framework\Registry $registry,
-                                array $data = [])
-    {
+    public function __construct(
+        Reviews\Helper\Config $config,
+        Reviews\Helper\Data $dataHelper,
+        Framework\View\Element\Template\Context $context,
+        Framework\Registry $registry,
+        array $data = []
+    ) {
         parent::__construct($context, $data);
 
         $this->_configHelper = $config;

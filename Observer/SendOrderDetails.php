@@ -18,13 +18,14 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
     private $_configProductModel;
     private $_store;
 
-    public function __construct(Reviews\Helper\Config $config,
-                                Reviews\Model\Api $api,
-                                Catalog\Model\Product $product,
-                                Catalog\Helper\Image $image,
-                                ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable $configurable,
-                                Store\Model\StoreManagerInterface $storeManagerInterface)
-    {
+    public function __construct(
+        Reviews\Helper\Config $config,
+        Reviews\Model\Api $api,
+        Catalog\Model\Product $product,
+        Catalog\Helper\Image $image,
+        ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable $configurable,
+        Store\Model\StoreManagerInterface $storeManagerInterface
+    ) {
         $this->_configHelper = $config;
         $this->_apiModel = $api;
         $this->_productModel = $product;
@@ -46,12 +47,16 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
             $magento_store_id = $order->getStoreId();
 
             if ($this->_configHelper->getStoreId($magento_store_id) && $this->_configHelper->getApiKey($magento_store_id) && $this->_configHelper->isMerchantReviewsEnabled($magento_store_id)) {
-                $merchantResponse = $this->_apiModel->apiPost('merchant/invitation', array(
-                    'source' => 'magento',
-                    'name' => $order->getCustomerName(),
-                    'email' => $order->getCustomerEmail(),
-                    'order_id' => $order->getRealOrderId(),
-                ), $magento_store_id);
+                $merchantResponse = $this->_apiModel->apiPost(
+                    'merchant/invitation',
+                    [
+                        'source' => 'magento',
+                        'name' => $order->getCustomerName(),
+                        'email' => $order->getCustomerEmail(),
+                        'order_id' => $order->getRealOrderId(),
+                    ],
+                    $magento_store_id
+                );
                 $this->_apiModel->addStatusMessage($merchantResponse, "Merchant Review Invitation");
             }
 
@@ -68,22 +73,26 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                         }
                     }
                     $imageUrl = $this->_imageHelper->init($item, 'product_page_image_large')->getUrl();
-                    $p[] = array(
+                    $p = [
                         'image' => $imageUrl,
                         'id' => $item->getProductId(),
                         'sku' => $item->getSku(),
                         'name' => $item->getName(),
                         'pageUrl' => $item->getProductUrl()
-                    );
+                    ];
                 }
 
-                $productResponse = $this->_apiModel->apiPost('product/invitation', array(
-                    'source' => 'magento',
-                    'name' => $order->getCustomerName(),
-                    'email' => $order->getCustomerEmail(),
-                    'order_id' => $order->getRealOrderId(),
-                    'products' => $p
-                ), $magento_store_id);
+                $productResponse = $this->_apiModel->apiPost(
+                    'product/invitation',
+                    [
+                        'source' => 'magento',
+                        'name' => $order->getCustomerName(),
+                        'email' => $order->getCustomerEmail(),
+                        'order_id' => $order->getRealOrderId(),
+                        'products' => $p
+                    ],
+                    $magento_store_id
+                );
                 $this->_apiModel->addStatusMessage($productResponse, "Product Review Invitation");
 
             }

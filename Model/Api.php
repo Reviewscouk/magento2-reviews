@@ -13,16 +13,16 @@ class Api extends Framework\Model\AbstractModel
     private $_messageInterface;
     private $_store;
 
-    public function __construct(Reviews\Helper\Config $config,
-                                Store\Model\StoreManagerInterface $storeManagerInterface,
-                                Framework\Message\ManagerInterface $managerInterface)
-    {
+    public function __construct(
+        Reviews\Helper\Config $config,
+        Store\Model\StoreManagerInterface $storeManagerInterface,
+        Framework\Message\ManagerInterface $managerInterface
+    ) {
 
         $this->_configHelper = $config;
         $this->_messageInterface = $managerInterface;
 
         $this->_store = $storeManagerInterface->getStore();
-
     }
 
     public function apiPost($url, $data, $magento_store_id = null)
@@ -34,11 +34,15 @@ class Api extends Framework\Model\AbstractModel
         $api_url = 'https://' . $this->getApiDomain($magento_store_id) . '/' . $url;
         $ch = curl_init($api_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'store: ' . $this->_configHelper->getStoreId($magento_store_id),
-            'apikey: ' . $this->_configHelper->getApiKey($magento_store_id),
-            'Content-Type: application/json'
-        ));
+        curl_setopt(
+            $ch,
+            CURLOPT_HTTPHEADER,
+            [
+                'store: ' . $this->_configHelper->getStoreId($magento_store_id),
+                'apikey: ' . $this->_configHelper->getApiKey($magento_store_id),
+                'Content-Type: application/json'
+            ]
+        );
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -60,5 +64,4 @@ class Api extends Framework\Model\AbstractModel
             $this->_messageInterface->addError($task . ' Error: ' . $object->message);
         }
     }
-
 }

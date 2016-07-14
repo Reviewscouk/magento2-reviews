@@ -14,10 +14,10 @@ class Region implements Framework\Option\ArrayInterface
      */
     public function toOptionArray()
     {
-        return array(
-            array('value' => 'UK', 'label' => __('UK')),
-            array('value' => 'US', 'label' => __('US'))
-        );
+        return [
+            ['value' => 'UK', 'label' => __('UK')],
+            ['value' => 'US', 'label' => __('US')]
+        ];
     }
 
     /**
@@ -27,10 +27,9 @@ class Region implements Framework\Option\ArrayInterface
      */
     public function toArray()
     {
-        return array(
+        return [
             'UK' => __('UK'),
             'US' => __('US')
-        );
+        ];
     }
-
 }

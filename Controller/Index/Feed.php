@@ -18,14 +18,16 @@ class Feed extends Framework\App\Action\Action
     protected $_imageHelper;
     protected $_storeModel;
 
-    public function __construct(Framework\App\Action\Context $context,
-                                Framework\Controller\Result\JsonFactory $resultJsonFactory,
-                                Framework\Cache\Core $core,
-                                Catalog\Model\Product $product,
-                                CatalogInventory\Api\StockRegistryInterface $stockRegistryInterface,
-                                Catalog\Helper\Image $image,
-                                Store\Model\StoreManagerInterface $storeManagerInterface,
-                                Reviews\Helper\Config $config)
+    public function __construct(
+        Framework\App\Action\Context $context,
+        Framework\Controller\Result\JsonFactory $resultJsonFactory,
+        Framework\Cache\Core $core,
+        Catalog\Model\Product $product,
+        CatalogInventory\Api\StockRegistryInterface $stockRegistryInterface,
+        Catalog\Helper\Image $image,
+        Store\Model\StoreManagerInterface $storeManagerInterface,
+        Reviews\Helper\Config $config
+    )
     {
         parent::__construct($context);
 
@@ -103,7 +105,7 @@ class Feed extends Framework\App\Action\Action
             $productFeed .= "</channel></rss>";
 
             // TODO:- Implement caching of feed
-            //$this->_cache->save($productFeed, "feed", array("reviews_feed_cache"), 86400);
+            //$this->_cache->save($productFeed, "feed", ["reviews_feed_cache"], 86400);
             //}
             //else
             //{
@@ -116,6 +118,4 @@ class Feed extends Framework\App\Action\Action
             echo "Product Feed is disabled.";
         }
     }
-
-
 }

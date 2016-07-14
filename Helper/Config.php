@@ -99,5 +99,4 @@ class Config extends Framework\App\Helper\AbstractHelper
         $value = $this->_config->getValue($code, Store\Model\ScopeInterface::SCOPE_STORE, $magentoStore);
         return $value;
     }
-
 }

@@ -13,11 +13,12 @@ class Reviewwidget extends Framework\View\Element\Template
     private $_registry;
     private $_store;
 
-    public function __construct(Reviews\Helper\Config $config,
-                                Reviews\Helper\Data $dataHelper,
-                                Framework\Registry $registry,
-                                Framework\View\Element\Template\Context $context,
-                                array $data = []
+    public function __construct(
+        Reviews\Helper\Config $config,
+        Reviews\Helper\Data $dataHelper,
+        Framework\Registry $registry,
+        Framework\View\Element\Template\Context $context,
+        array $data = []
     )
     {
         parent::__construct($context, $data);
@@ -62,18 +63,18 @@ class Reviewwidget extends Framework\View\Element\Template
 
     public function getSettings()
     {
-        $data = array(
+        $data = [
             'store_id' => $this->_configHelper->getStoreId($this->_store->getId()),
             'api_url' => $this->getWidgetURL(),
             'colour' => $this->getWidgetColor(),
-        );
+        ];
 
         return $data;
     }
 
     public function getProductSkus()
     {
-        $skus = array();
+        $skus = [];
 
         if ($this->_registry->registry('current_product')) {
             $skus = $this->_dataHelper->getProductSkus($this->_registry->registry('current_product'));
@@ -99,5 +100,4 @@ class Reviewwidget extends Framework\View\Element\Template
         if ($region == 'US') $api_url = 'widget.review.io';
         return $api_url;
     }
-
 }

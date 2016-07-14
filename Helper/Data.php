@@ -12,10 +12,11 @@ class Data extends Framework\App\Helper\AbstractHelper
     private $_configHelper;
     private $_registry;
 
-    public function __construct(Framework\App\Helper\Context $context,
-                                Reviews\Helper\Config $config,
-                                Framework\Registry $registry)
-    {
+    public function __construct(
+        Framework\App\Helper\Context $context,
+        Reviews\Helper\Config $config,
+        Framework\Registry $registry
+    ) {
         $this->_configHelper = $config;
         $this->_registry = $registry;
 
@@ -27,7 +28,7 @@ class Data extends Framework\App\Helper\AbstractHelper
         $sku = $product->getSku();
         $type = $product->getTypeID();
 
-        $productSkus = array($sku);
+        $productSkus = [$sku];
         if ($type == 'configurable') {
             $usedProducts = $product->getTypeInstance()->getUsedProducts();
             foreach ($usedProducts as $usedProduct) {

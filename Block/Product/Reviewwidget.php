@@ -88,9 +88,13 @@ class Reviewwidget extends Framework\View\Element\Template
     {
         $colour = $this->_configHelper->getProductWidgetColour($this->_store->getId());
         // people will sometimes put hash and sometimes they will forgot so we need to check for this error
-        if (strpos($colour, '#') === FALSE) $colour = '#' . $colour;
+        if (strpos($colour, '#') === FALSE) {
+            $colour = '#' . $colour;
+        }
         // checking to see if we hare a valid colour. If not then we change it to reviews default hex colour
-        if (!preg_match('/^#[a-f0-9]{6}$/i', $colour)) $colour = '#5db11f';
+        if (!preg_match('/^#[a-f0-9]{6}$/i', $colour)) {
+            $colour = '#5db11f';
+        }
         return $colour;
     }
 
@@ -98,7 +102,9 @@ class Reviewwidget extends Framework\View\Element\Template
     {
         $region = $this->_configHelper->getRegion($this->_store->getId());
         $api_url = 'widget.reviews.co.uk';
-        if ($region == 'US') $api_url = 'widget.review.io';
+        if ($region == 'US') {
+            $api_url = 'widget.review.io';
+        }
         return $api_url;
     }
 }

@@ -1,8 +1,8 @@
 <?php
-if ($this->isProductWidgetEnabled()){
-    if($this->isIframeWidget()) {
-        $_data = $this->getSettings();
-        $_skus = $this->getProductSkus();
+if ($block->isProductWidgetEnabled()){
+    if ($block->isIframeWidget()) {
+        $_data = $block->getSettings();
+        $_skus = $block->getProductSkus();
         ?>
         <script src="https://<?php /* @escapeNotVerified */ echo $_data['api_url']; ?>/product/dist.js"></script>
         <div id="widget"></div>
@@ -33,7 +33,7 @@ if ($this->isProductWidgetEnabled()){
         </script>
         <?php
     } else {
-        echo $block->escapeHtml($this->getStaticWidget());
+        echo $block->escapeHtml($block->getStaticWidget());
     }
 }
 ?>

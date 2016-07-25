@@ -35,10 +35,10 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
     {
         $shipment = $observer->getEvent()->getShipment();
         $order = $shipment->getOrder();
-        $this->dispatch_notification($order);
+        $this->dispatchNotification($order);
     }
 
-    public function dispatch_notification($order)
+    public function dispatchNotification($order)
     {
         try {
             $magento_store_id = $order->getStoreId();

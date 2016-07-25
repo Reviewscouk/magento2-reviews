@@ -88,7 +88,6 @@ class Config extends Framework\App\Helper\AbstractHelper
         return $this->getValue(self::XML_CONFIG_PRODUCT_FEED_ENABLED, $magentoStore);
     }
 
-
     /**
      * @param $code
      * @param $magentoStore

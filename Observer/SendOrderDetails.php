@@ -34,7 +34,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
         $this->_store = $storeManagerInterface->getStore();
     }
 
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Framework\Event\Observer $observer)
     {
         $shipment = $observer->getEvent()->getShipment();
         $order = $shipment->getOrder();
@@ -96,7 +96,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                 $this->_apiModel->addStatusMessage($productResponse, "Product Review Invitation");
 
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
         }
     }
 }

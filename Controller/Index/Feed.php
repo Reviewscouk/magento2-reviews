@@ -46,9 +46,6 @@ class Feed extends Framework\App\Action\Action
         $productFeedEnabled = $this->_configHelper->isProductFeedEnabled($store->getId());
         if ($productFeedEnabled) {
             // TODO:- Implement caching of Feed
-            //$saveCached = $this->_cache->load("feed");
-            //if(!$saveCached)
-            //{
             $productFeed = "<?xml version='1.0'?>
                     <rss version ='2.0' xmlns:g='http://base.google.com/ns/1.0'>
                     <channel>
@@ -105,12 +102,6 @@ class Feed extends Framework\App\Action\Action
             $productFeed .= "</channel></rss>";
 
             // TODO:- Implement caching of feed
-            //$this->_cache->save($productFeed, "feed", ["reviews_feed_cache"], 86400);
-            //}
-            //else
-            //{
-            //    $productFeed = $saveCached;
-            //}
 
             echo $productFeed;
             exit();

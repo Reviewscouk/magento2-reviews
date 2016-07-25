@@ -7,10 +7,10 @@ use Magento\Framework as Framework;
 
 class Richsnippet extends Framework\View\Element\Template
 {
-    private $_dataHelper;
-    private $_configHelper;
-    private $_registry;
-    private $_store;
+    private $dataHelper;
+    private $configHelper;
+    private $registry;
+    private $store;
 
     public function __construct(
         Reviews\Helper\Config $config,
@@ -21,20 +21,20 @@ class Richsnippet extends Framework\View\Element\Template
     ) {
         parent::__construct($context, $data);
 
-        $this->_configHelper = $config;
-        $this->_dataHelper = $dataHelper;
-        $this->_registry = $registry;
-        $this->_store = $this->_storeManager->getStore();
+        $this->configHelper = $config;
+        $this->dataHelper = $dataHelper;
+        $this->registry = $registry;
+        $this->store = $this->_storeManager->getStore();
     }
 
     public function autoRichSnippet()
     {
-        $merchant_enabled = $this->_configHelper->isMerchantRichSnippetsEnabled($this->_store->getId());
-        $product_enabled = $this->_configHelper->isProductRichSnippetsEnabled($this->_store->getId());
-        $current_product = $this->_registry->registry('current_product');
+        $merchant_enabled = $this->configHelper->isMerchantRichSnippetsEnabled($this->store->getId());
+        $product_enabled = $this->configHelper->isProductRichSnippetsEnabled($this->store->getId());
+        $current_product = $this->registry->registry('current_product');
 
         if ($current_product && $product_enabled) {
-            $sku = $this->_dataHelper->getProductSkus($current_product);
+            $sku = $this->dataHelper->getProductSkus($current_product);
             return $this->getRichSnippet($sku);
         } elseif ($merchant_enabled) {
             return $this->getRichSnippet();
@@ -48,8 +48,8 @@ class Richsnippet extends Framework\View\Element\Template
             $sku = implode(';', $sku);
         }
 
-        $region = $this->_configHelper->getRegion($this->_store->getId());
-        $storeName = $this->_configHelper->getStoreId($this->_store->getId());
+        $region = $this->configHelper->getRegion($this->store->getId());
+        $storeName = $this->configHelper->getStoreId($this->store->getId());
         $url = $region == 'us' ? 'https://widget.reviews.io/rich-snippet/dist.js' : 'https://widget.reviews.co.uk/rich-snippet/dist.js';
 
         $output = '<script src="' . $url . '"></script>';

@@ -11,12 +11,12 @@ use Reviewscouk\Reviews as Reviews;
 class Feed extends Framework\App\Action\Action
 {
 
-    protected $_configHelper;
-    protected $_cache;
-    protected $_productModel;
-    protected $_stockModel;
-    protected $_imageHelper;
-    protected $_storeModel;
+    protected $configHelper;
+    protected $cache;
+    protected $productModel;
+    protected $stockModel;
+    protected $imageHelper;
+    protected $storeModel;
 
     public function __construct(
         Framework\App\Action\Context $context,
@@ -31,19 +31,19 @@ class Feed extends Framework\App\Action\Action
     {
         parent::__construct($context);
 
-        $this->_configHelper = $config;
-        $this->_cache = $core;
-        $this->_productModel = $product;
-        $this->_stockModel = $stockRegistryInterface;
-        $this->_imageHelper = $image;
-        $this->_storeModel = $storeManagerInterface;
+        $this->configHelper = $config;
+        $this->cache = $core;
+        $this->productModel = $product;
+        $this->stockModel = $stockRegistryInterface;
+        $this->imageHelper = $image;
+        $this->storeModel = $storeManagerInterface;
     }
 
     public function execute()
     {
-        $store = $this->_storeModel->getStore();
+        $store = $this->storeModel->getStore();
 
-        $productFeedEnabled = $this->_configHelper->isProductFeedEnabled($store->getId());
+        $productFeedEnabled = $this->configHelper->isProductFeedEnabled($store->getId());
         if ($productFeedEnabled) {
             // TODO:- Implement caching of Feed
             $productFeed = "<?xml version='1.0'?>
@@ -52,9 +52,9 @@ class Feed extends Framework\App\Action\Action
                     <title><![CDATA[" . $store->getName() . "]]></title>
                     <link>" . $store->getBaseUrl() . "</link>";
 
-            $products = $this->_productModel->getCollection();
+            $products = $this->productModel->getCollection();
             foreach ($products as $prod) {
-                $product = $this->_productModel->load($prod->getId());
+                $product = $this->productModel->load($prod->getId());
 
                 $brand = $product->getAttributeText('manufacturer') ? $product->getAttributeText('manufacturer') : 'Not Available';
 
@@ -86,7 +86,7 @@ class Feed extends Framework\App\Action\Action
                     }
                 }
 
-                $stock = $this->_stockModel->getStockItem(
+                $stock = $this->stockModel->getStockItem(
                     $product->getId(),
                     $product->getStore()->getWebsiteId()
                 );

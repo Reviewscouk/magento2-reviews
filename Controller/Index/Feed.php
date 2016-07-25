@@ -11,16 +11,15 @@ use Reviewscouk\Reviews as Reviews;
 class Feed extends Framework\App\Action\Action
 {
 
-    protected $configHelper;
-    protected $cache;
-    protected $productModel;
-    protected $stockModel;
-    protected $imageHelper;
-    protected $storeModel;
+    private $configHelper;
+    private $cache;
+    private $productModel;
+    private $stockModel;
+    private $imageHelper;
+    private $storeModel;
 
     public function __construct(
         Framework\App\Action\Context $context,
-        Framework\Controller\Result\JsonFactory $resultJsonFactory,
         Framework\Cache\Core $core,
         Catalog\Model\Product $product,
         CatalogInventory\Api\StockRegistryInterface $stockRegistryInterface,

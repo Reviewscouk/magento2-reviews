@@ -88,7 +88,7 @@ class Reviewwidget extends Framework\View\Element\Template
     {
         $colour = $this->configHelper->getProductWidgetColour($this->store->getId());
         // people will sometimes put hash and sometimes they will forgot so we need to check for this error
-        if (strpos($colour, '#') === FALSE) {
+        if (strpos($colour, '#') === false) {
             $colour = '#' . $colour;
         }
         // checking to see if we hare a valid colour. If not then we change it to reviews default hex colour

@@ -36,7 +36,7 @@ class Richsnippet extends Framework\View\Element\Template
         if ($current_product && $product_enabled) {
             $sku = $this->dataHelper->getProductSkus($current_product);
             return $this->getRichSnippet($sku);
-        } elseif ($merchant_enabled) {
+        } else if ($merchant_enabled) {
             return $this->getRichSnippet();
         }
         return '';

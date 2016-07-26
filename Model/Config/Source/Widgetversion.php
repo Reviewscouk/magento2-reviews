@@ -14,10 +14,10 @@ class Widgetversion implements Framework\Option\ArrayInterface
      */
     public function toOptionArray()
     {
-        return array(
-            array('value' => '1', 'label' => __('Javascript Widget')),
-            array('value' => '2', 'label' => __('Static Content Widget')),
-        );
+        return [
+            ['value' => '1', 'label' => __('Javascript Widget')],
+            ['value' => '2', 'label' => __('Static Content Widget')],
+        ];
     }
 
     /**
@@ -27,10 +27,9 @@ class Widgetversion implements Framework\Option\ArrayInterface
      */
     public function toArray()
     {
-        return array(
+        return [
             '1' => __('V1 - Javascript Widget'),
             '2' => __('V2 - Static Content'),
-        );
+        ];
     }
-
 }

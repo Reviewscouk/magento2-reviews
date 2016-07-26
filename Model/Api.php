@@ -9,36 +9,40 @@ use Magento\Store as Store;
 class Api extends Framework\Model\AbstractModel
 {
 
-    private $_configHelper;
-    private $_messageInterface;
-    private $_store;
+    private $configHelper;
+    private $messageInterface;
+    private $store;
 
-    public function __construct(Reviews\Helper\Config $config,
-                                Store\Model\StoreManagerInterface $storeManagerInterface,
-                                Framework\Message\ManagerInterface $managerInterface)
-    {
+    public function __construct(
+        Reviews\Helper\Config $config,
+        Store\Model\StoreManagerInterface $storeManagerInterface,
+        Framework\Message\ManagerInterface $managerInterface
+    ) {
 
-        $this->_configHelper = $config;
-        $this->_messageInterface = $managerInterface;
+        $this->configHelper = $config;
+        $this->messageInterface = $managerInterface;
 
-        $this->_store = $storeManagerInterface->getStore();
-
+        $this->store = $storeManagerInterface->getStore();
     }
 
     public function apiPost($url, $data, $magento_store_id = null)
     {
         if ($magento_store_id == null) {
-            $magento_store_id = $this->_store->getId();
+            $magento_store_id = $this->store->getId();
         }
 
         $api_url = 'https://' . $this->getApiDomain($magento_store_id) . '/' . $url;
         $ch = curl_init($api_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'store: ' . $this->_configHelper->getStoreId($magento_store_id),
-            'apikey: ' . $this->_configHelper->getApiKey($magento_store_id),
-            'Content-Type: application/json'
-        ));
+        curl_setopt(
+            $ch,
+            CURLOPT_HTTPHEADER,
+            [
+                'store: ' . $this->configHelper->getStoreId($magento_store_id),
+                'apikey: ' . $this->configHelper->getApiKey($magento_store_id),
+                'Content-Type: application/json'
+            ]
+        );
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -49,7 +53,7 @@ class Api extends Framework\Model\AbstractModel
 
     protected function getApiDomain($magento_store_id = null)
     {
-        return $this->_configHelper->getRegion($magento_store_id) == 'US' ? 'api.reviews.io' : 'api.reviews.co.uk';
+        return $this->configHelper->getRegion($magento_store_id) == 'US' ? 'api.reviews.io' : 'api.reviews.co.uk';
     }
 
     public function addStatusMessage($object, $task)
@@ -57,8 +61,7 @@ class Api extends Framework\Model\AbstractModel
         $object = json_decode($object);
 
         if (isset($object->status) && $object->status == 'error') {
-            $this->_messageInterface->addError($task . ' Error: ' . $object->message);
+            $this->messageInterface->addError($task . ' Error: ' . $object->message);
         }
     }
-
 }

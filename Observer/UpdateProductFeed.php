@@ -9,33 +9,36 @@ use Magento\Store as Store;
 class UpdateProductFeed implements Framework\Event\ObserverInterface
 {
 
-    private $_apiModel;
-    private $_storeModel;
+    private $apiModel;
+    private $storeModel;
 
-    public function __construct(Reviews\Model\Api $api,
-                                Store\Model\StoreManagerInterface $storeManagerInterface)
+    public function __construct(
+        Reviews\Model\Api $api,
+        Store\Model\StoreManagerInterface $storeManagerInterface)
     {
-
-        $this->_apiModel = $api;
-        $this->_storeModel = $storeManagerInterface;
-
+        $this->apiModel = $api;
+        $this->storeModel = $storeManagerInterface;
     }
 
     public function execute(Framework\Event\Observer $observer)
     {
-        $setFeed = $this->_apiModel->apiPost('integration/set-feed', array(
-            'url' => $this->_storeModel->getStore()->getBaseUrl() . 'reviews/index/feed',
-            'format' => 'xml'
-        ));
-        $this->_apiModel->addStatusMessage($setFeed, "Syncing Product Feed Configuration");
+        $setFeed = $this->apiModel->apiPost(
+            'integration/set-feed',
+            [
+                'url' => $this->storeModel->getStore()->getBaseUrl() . 'reviews/index/feed',
+                'format' => 'xml'
+            ]
+        );
+        $this->apiModel->addStatusMessage($setFeed, "Syncing Product Feed Configuration");
 
-        $appInstalled = $this->_apiModel->apiPost('integration/app-installed', array(
-            'platform' => 'magento',
-            'url' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ''
-        ));
-        $this->_apiModel->addStatusMessage($appInstalled, "Communication");
+        $appInstalled = $this->apiModel->apiPost(
+            'integration/app-installed',
+            [
+                'platform' => 'magento',
+                'url' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ''
+            ]
+        );
+        $this->apiModel->addStatusMessage($appInstalled, "Communication");
 
     }
-
-
 }

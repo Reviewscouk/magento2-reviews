@@ -1,16 +1,16 @@
 <?php
-if ($this->isProductWidgetEnabled()){
-    if($this->isIframeWidget()) {
-        $_data = $this->getSettings();
-        $_skus = $this->getProductSkus();
+if ($block->isProductWidgetEnabled()){
+    if ($block->isIframeWidget()) {
+        $_data = $block->getSettings();
+        $_skus = $block->getProductSkus();
         ?>
-        <script src="https://<?php echo $_data['api_url']; ?>/product/dist.js"></script>
+        <script src="https://<?php /* @escapeNotVerified */ echo $_data['api_url']; ?>/product/dist.js"></script>
         <div id="widget"></div>
         <script type="text/javascript">
             productWidget("widget", {
-                store: '<?php echo $_data['store_id']; ?>',
-                sku: '<?php echo implode(';', $_skus); ?>', // Multiple SKU"s Seperated by Semi-Colons
-                primaryClr: "<?php echo $_data['colour']; ?>",
+                store: '<?php echo $block->escapeHtml($_data['store_id']); ?>',
+                sku: '<?php echo $block->escapeHtml(implode(';', $_skus)); ?>', // Multiple SKU"s Seperated by Semi-Colons
+                primaryClr: "<?php /* @noEscape */ echo $_data['colour']; ?>",
                 neutralClr: "#EBEBEB",
                 buttonClr: "#EEE",
                 textClr: "#333",
@@ -19,21 +19,21 @@ if ($this->isProductWidgetEnabled()){
                 showTabs: true,
                 ratingStars: false,
                 showAvatars: true,
-                translateAverage: '<?php echo __("Average");?>',
-                translateReviews: '<?php echo __("Reviews");?>',
-                translateNoReviews: '<?php echo __("No Reviews");?>',
-                translateMoreRatings: '<?php echo __("More Ratings");?>',
-                translateNoComments: '<?php echo __("This review has no comments");?>',
-                translateReplyFrom: '<?php echo __("Reply from");?>',
-                translatePosted: '<?php echo __("Posted");?>',
-                translateWriteReview: '<?php echo __("Write a Review");?>',
-                translateShow: '<?php echo __("Show");?>',
-                translateDetails: '<?php echo __("Details");?>'
+                translateAverage: '<?php /* @escapeNotVerified */ echo __("Average");?>',
+                translateReviews: '<?php /* @escapeNotVerified */ echo __("Reviews");?>',
+                translateNoReviews: '<?php /* @escapeNotVerified */ echo __("No Reviews");?>',
+                translateMoreRatings: '<?php /* @escapeNotVerified */ echo __("More Ratings");?>',
+                translateNoComments: '<?php /* @escapeNotVerified */ echo __("This review has no comments");?>',
+                translateReplyFrom: '<?php /* @escapeNotVerified */ echo __("Reply from");?>',
+                translatePosted: '<?php /* @escapeNotVerified */ echo __("Posted");?>',
+                translateWriteReview: '<?php /* @escapeNotVerified */ echo __("Write a Review");?>',
+                translateShow: '<?php /* @escapeNotVerified */ echo __("Show");?>',
+                translateDetails: '<?php /* @escapeNotVerified */ echo __("Details");?>'
             });
         </script>
         <?php
     } else {
-        echo $this->getStaticWidget();
+        echo $block->escapeHtml($block->getStaticWidget());
     }
 }
 ?>

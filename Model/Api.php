@@ -51,7 +51,7 @@ class Api extends Framework\Model\AbstractModel
         return $response;
     }
 
-    protected function getApiDomain($magento_store_id = null)
+    private function getApiDomain($magento_store_id = null)
     {
         return $this->configHelper->getRegion($magento_store_id) == 'US' ? 'api.reviews.io' : 'api.reviews.co.uk';
     }

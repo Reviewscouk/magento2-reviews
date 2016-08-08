@@ -19,8 +19,7 @@ class Reviewwidget extends Framework\View\Element\Template
         Framework\Registry $registry,
         Framework\View\Element\Template\Context $context,
         array $data = []
-    )
-    {
+    ) {
         parent::__construct($context, $data);
 
         $this->configHelper = $config;
@@ -84,7 +83,7 @@ class Reviewwidget extends Framework\View\Element\Template
         return $skus;
     }
 
-    protected function getWidgetColor()
+    private function getWidgetColor()
     {
         $colour = $this->configHelper->getProductWidgetColour($this->store->getId());
         // people will sometimes put hash and sometimes they will forgot so we need to check for this error
@@ -98,7 +97,7 @@ class Reviewwidget extends Framework\View\Element\Template
         return $colour;
     }
 
-    protected function getWidgetURL()
+    private function getWidgetURL()
     {
         $region = $this->configHelper->getRegion($this->store->getId());
         $api_url = 'widget.reviews.co.uk';

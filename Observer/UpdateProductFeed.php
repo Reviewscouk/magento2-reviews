@@ -14,13 +14,13 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
 
     public function __construct(
         Reviews\Model\Api $api,
-        Store\Model\StoreManagerInterface $storeManagerInterface)
-    {
+        Store\Model\StoreManagerInterface $storeManagerInterface
+    ){
         $this->apiModel = $api;
         $this->storeModel = $storeManagerInterface;
     }
 
-    public function execute(Framework\Event\Observer $observer)
+    public function execute()
     {
         $setFeed = $this->apiModel->apiPost(
             'integration/set-feed',

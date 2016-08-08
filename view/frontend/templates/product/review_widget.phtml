@@ -1,5 +1,5 @@
 <?php
-if ($block->isProductWidgetEnabled()){
+if ($block->isProductWidgetEnabled()) {
     if ($block->isIframeWidget()) {
         $_data = $block->getSettings();
         $_skus = $block->getProductSkus();
@@ -9,7 +9,7 @@ if ($block->isProductWidgetEnabled()){
         <script type="text/javascript">
             productWidget("widget", {
                 store: '<?php echo $block->escapeHtml($_data['store_id']); ?>',
-                sku: '<?php echo $block->escapeHtml(implode(';', $_skus)); ?>', // Multiple SKU"s Seperated by Semi-Colons
+                sku: '<?php echo $block->escapeHtml(implode(';', $_skus)); ?>',
                 primaryClr: "<?php /* @noEscape */ echo $_data['colour']; ?>",
                 neutralClr: "#EBEBEB",
                 buttonClr: "#EEE",

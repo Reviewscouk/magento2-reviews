@@ -36,7 +36,7 @@ class Richsnippet extends Framework\View\Element\Template
         if ($current_product && $product_enabled) {
             $sku = $this->dataHelper->getProductSkus($current_product);
             return $this->getRichSnippet($sku);
-        } else if ($merchant_enabled) {
+        } elseif ($merchant_enabled) {
             return $this->getRichSnippet();
         }
         return '';
@@ -50,7 +50,8 @@ class Richsnippet extends Framework\View\Element\Template
 
         $region = $this->configHelper->getRegion($this->store->getId());
         $storeName = $this->configHelper->getStoreId($this->store->getId());
-        $url = $region == 'us' ? 'https://widget.reviews.io/rich-snippet/dist.js' : 'https://widget.reviews.co.uk/rich-snippet/dist.js';
+        $url = $region == 'us'
+            ? 'https://widget.reviews.io/rich-snippet/dist.js' : 'https://widget.reviews.co.uk/rich-snippet/dist.js';
 
         $output = '<script src="' . $url . '"></script>';
         $output .= '<script>richSnippet({ store: "' . $storeName . '", sku:"' . $sku . '" })</script>';

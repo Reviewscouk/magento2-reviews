@@ -26,8 +26,7 @@ class Feed extends Framework\App\Action\Action
         Catalog\Helper\Image $image,
         Store\Model\StoreManagerInterface $storeManagerInterface,
         Reviews\Helper\Config $config
-    )
-    {
+    ){
         parent::__construct($context);
 
         $this->configHelper = $config;
@@ -55,7 +54,8 @@ class Feed extends Framework\App\Action\Action
             foreach ($products as $prod) {
                 $product = $this->productModel->load($prod->getId());
 
-                $brand = $product->getAttributeText('manufacturer') ? $product->getAttributeText('manufacturer') : 'Not Available';
+                $brand = $product->getAttributeText('manufacturer') ?
+                    $product->getAttributeText('manufacturer') : 'Not Available';
 
                 $price = $product->getPrice();
                 $finalPrice = $product->getFinalPrice();
@@ -81,7 +81,8 @@ class Feed extends Framework\App\Action\Action
                 $categoryCollection = $product->getCategoryCollection();
                 if (count($categoryCollection) > 0) {
                     foreach ($categoryCollection as $category) {
-                        $productFeed .= "<g:google_product_category><![CDATA[" . $category->getName() . "]]></g:google_product_category>";
+                        $productFeed .= "<g:google_product_category><![CDATA[" . $category->getName()
+                            . "]]></g:google_product_category>";
                     }
                 }
 

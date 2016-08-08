@@ -23,7 +23,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
         Catalog\Model\Product $product,
         Catalog\Helper\Image $image,
         ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable $configurable
-    ) {
+    ){
         $this->configHelper = $config;
         $this->apiModel = $api;
         $this->productModel = $product;
@@ -43,7 +43,10 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
         try {
             $magento_store_id = $order->getStoreId();
 
-            if ($this->configHelper->getStoreId($magento_store_id) && $this->configHelper->getApiKey($magento_store_id) && $this->configHelper->isMerchantReviewsEnabled($magento_store_id)) {
+            if ($this->configHelper->getStoreId($magento_store_id)
+                && $this->configHelper->getApiKey($magento_store_id)
+                && $this->configHelper->isMerchantReviewsEnabled($magento_store_id)
+            ) {
                 $merchantResponse = $this->apiModel->apiPost(
                     'merchant/invitation',
                     [
@@ -57,7 +60,10 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                 $this->apiModel->addStatusMessage($merchantResponse, "Merchant Review Invitation");
             }
 
-            if ($this->configHelper->getStoreId($magento_store_id) && $this->configHelper->getApiKey($magento_store_id) && $this->configHelper->isProductReviewsEnabled($magento_store_id)) {
+            if ($this->configHelper->getStoreId($magento_store_id)
+                && $this->configHelper->getApiKey($magento_store_id)
+                && $this->configHelper->isProductReviewsEnabled($magento_store_id)
+            ) {
                 $items = $order->getAllVisibleItems();
                 foreach ($items as $item) {
                     $item = $this->productModel->load($item->getProductId());

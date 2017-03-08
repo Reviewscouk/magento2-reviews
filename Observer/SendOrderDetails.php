@@ -59,6 +59,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
 
             if ($this->configHelper->getStoreId($magento_store_id) && $this->configHelper->getApiKey($magento_store_id) && $this->configHelper->isProductReviewsEnabled($magento_store_id)) {
                 $items = $order->getAllVisibleItems();
+                $p = array();
                 foreach ($items as $item) {
                     $item = $this->productModel->load($item->getProductId());
 
@@ -70,7 +71,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                         }
                     }
                     $imageUrl = $this->imageHelper->init($item, 'product_page_image_large')->getUrl();
-                    $p = [
+                    $p[] = [
                         'image' => $imageUrl,
                         'id' => $item->getProductId(),
                         'sku' => $item->getSku(),

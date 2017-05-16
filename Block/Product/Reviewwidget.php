@@ -35,6 +35,11 @@ class Reviewwidget extends Framework\View\Element\Template
         return $this->configHelper->isProductWidgetEnabled($this->store->getId());
     }
 
+    public function isQuestionWidgetEnabled()
+    {
+        return $this->configHelper->isQuestionWidgetEnabled($this->store->getId());
+    }
+
     public function isIframeWidget()
     {
         $productWidgetVersion = $this->configHelper->getProductWidgetVersion($this->store->getId());

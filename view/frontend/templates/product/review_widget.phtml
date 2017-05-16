@@ -36,4 +36,19 @@ if ($block->isProductWidgetEnabled()){
         echo $block->escapeHtml($block->getStaticWidget());
     }
 }
+
+if ($block->isQuestionWidgetEnabled()){
+?>
+    <div id="questions-widget"></div>
+    <script src="https://<?php /* @escapeNotVerified */ echo $_data['api_url']; ?>/questions-answers/dist.js" type="text/javascript"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            questionsWidget('questions-widget', {
+                store: "<?php echo $block->escapeHtml($_data['store_id']); ?>",
+                group: '<?php echo $block->escapeHtml(implode(';', $_skus)); ?>', // Multiple SKU"s Seperated by Semi-Colons
+            });
+        });
+    </script>    
+<?php
+}
 ?>

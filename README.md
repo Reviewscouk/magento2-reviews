@@ -1,4 +1,4 @@
-#Reviews.co.uk for Magento 2
+#Reviews.co.uk for Magento 
 
 You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.uk") or [Reviews.io](https://www.reviews.io "Reviews.io")to use this plugin.
 
@@ -9,7 +9,7 @@ You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.
 2. As this plugin is hosted on [packagist.org](http://packagist.org), you simply use the following to instruct composer to fetch and install the module:
 
     ```bash
-    composer require reviewscouk/reviews:0.0.4
+    composer require reviewscouk/reviews:0.0.5
     ```
 
 3. When this is complete, `cd` to `/bin` and run the following:

@@ -68,8 +68,6 @@ class Config extends Framework\App\Helper\AbstractHelper
         return $this->getValue(self::XML_CONFIG_PRODUCT_WIDGET_ENABLED, $magentoStore);
     }
 
-
-
     public function isQuestionWidgetEnabled($magentoStore)
     {
         return $this->getValue(self::XML_CONFIG_QUESTION_WIDGET_ENABLED, $magentoStore);

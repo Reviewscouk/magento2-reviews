@@ -1,4 +1,4 @@
-#Reviews.co.uk for Magento 
+#Reviews.co.uk for Magento
 
 You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.uk") or [Reviews.io](https://www.reviews.io "Reviews.io")to use this plugin.
 
@@ -7,6 +7,7 @@ You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.
 1. Via command line, `cd` to Magento2 root folder
 
 2. As this plugin is hosted on [packagist.org](http://packagist.org), you simply use the following to instruct composer to fetch and install the module:
+
 
     composer require reviewscouk/reviews:0.0.6
 
@@ -17,7 +18,7 @@ You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.
     ./magento module:enable Reviewscouk_Reviews --clear-static-content
     ./magento setup:upgrade
     ```
-    
+
 ## Basic Configuration
 
 This extension requires a Store ID and an API key, obtained from your account area on [Reviews.co.uk](http://www.reviews.co.uk/) or [Reviews.io](http://www.reviews.io/). To find these details;
@@ -27,7 +28,7 @@ This extension requires a Store ID and an API key, obtained from your account ar
 3. Here, you'll find your __Store ID__ and __API Key__ required by the module.
 
 To configure the module, log into your Magento Administration panel (ensuring the module is correctly installed) and then;
- 
+
 1. Navigate to `Stores -> Configuration -> Reviews.co.uk -> Setup`
 2. Select your __Region__. Reviews.co.uk customers will be _UK_, and Reviews.io customers will be _US_
 3. Enter your __Store ID__ and __API KEY__
@@ -58,7 +59,7 @@ Automatically pull through product specific reviews directly onto your product p
 
 1. Navigate to  `Stores -> Configuration -> Reviews.co.uk -> On Page Content -> Product Reviews Widget`
 2. Set __Display Reviews Widget on Product Pages__ to _Yes_
-3. You can set the colour used in the widget by entering a HEX colour code into the __Widget Hex Colour__ field. This code must be a valid 6 digit HEX value, with or without the leading # character. 
+3. You can set the colour used in the widget by entering a HEX colour code into the __Widget Hex Colour__ field. This code must be a valid 6 digit HEX value, with or without the leading # character.
 4. This extension offers 2 types of widget, set via changing the value in the __Product Widget Version__ drop down. _Javascript Widget_ is the classic method of displaying reviews and will place an iFrame on the page with the reviews inside. The newer method, _Static Content Widget_, will display the reviews directly on the product page, rather than inside an iFrame. This is the preferred method as it allows search engines like Google to crawl and cache the content of the reviews.
 
 ### Rich Snippets

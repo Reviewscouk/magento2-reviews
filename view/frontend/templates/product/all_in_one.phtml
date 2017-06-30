@@ -1,0 +1,59 @@
+<?php
+if (!$block->isTabMode()) {
+    if ($block->isProductWidgetEnabled()){
+        if ($block->isIframeWidget()) {
+            $_data = $block->getSettings();
+            $_skus = $block->getProductSkus();
+            ?>
+            <script src="https://<?php /* @escapeNotVerified */ echo $_data['api_url']; ?>/product/dist.js"></script>
+            <div id="widget"></div>
+            <script type="text/javascript">
+                productWidget("widget", {
+                    store: '<?php echo $block->escapeHtml($_data['store_id']); ?>',
+                    sku: '<?php echo $block->escapeHtml(implode(';', $_skus)); ?>', // Multiple SKU"s Seperated by Semi-Colons
+                    primaryClr: "<?php /* @noEscape */ echo $_data['colour']; ?>",
+                    neutralClr: "#EBEBEB",
+                    buttonClr: "#EEE",
+                    textClr: "#333",
+                    tabClr: "#eee",
+                    questions: true,
+                    showTabs: true,
+                    ratingStars: false,
+                    showAvatars: true,
+                    translateAverage: '<?php /* @escapeNotVerified */ echo __("Average");?>',
+                    translateReviews: '<?php /* @escapeNotVerified */ echo __("Reviews");?>',
+                    translateNoReviews: '<?php /* @escapeNotVerified */ echo __("No Reviews");?>',
+                    translateMoreRatings: '<?php /* @escapeNotVerified */ echo __("More Ratings");?>',
+                    translateNoComments: '<?php /* @escapeNotVerified */ echo __("This review has no comments");?>',
+                    translateReplyFrom: '<?php /* @escapeNotVerified */ echo __("Reply from");?>',
+                    translatePosted: '<?php /* @escapeNotVerified */ echo __("Posted");?>',
+                    translateWriteReview: '<?php /* @escapeNotVerified */ echo __("Write a Review");?>',
+                    translateShow: '<?php /* @escapeNotVerified */ echo __("Show");?>',
+                    translateDetails: '<?php /* @escapeNotVerified */ echo __("Details");?>'
+                });
+            </script>
+            <?php
+        } else {
+            echo $block->escapeHtml($block->getStaticWidget());
+        }
+    }
+    ?>
+    <?php
+    if ($block->isQuestionWidgetEnabled()){
+        $_data = $block->getSettings();
+        $_skus = $block->getProductSkus();
+    ?>
+        <div id="questions-widget"></div>
+        <script src="https://<?php /* @escapeNotVerified */ echo $_data['api_url']; ?>/questions-answers/dist.js" type="text/javascript"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                questionsWidget('questions-widget', {
+                    store: "<?php echo $block->escapeHtml($_data['store_id']); ?>",
+                    group: '<?php echo $block->escapeHtml(implode(';', $_skus)); ?>', // Multiple SKU"s Seperated by Semi-Colons
+                });
+            });
+        </script>
+    <?php
+    }
+}
+?>

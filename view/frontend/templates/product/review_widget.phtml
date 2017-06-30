@@ -1,5 +1,5 @@
 <?php
-if ($block->isProductWidgetEnabled()){
+if ($block->isProductWidgetEnabled() && $block->isTabMode()){
     if ($block->isIframeWidget()) {
         $_data = $block->getSettings();
         $_skus = $block->getProductSkus();

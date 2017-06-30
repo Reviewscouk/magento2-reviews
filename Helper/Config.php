@@ -13,7 +13,10 @@ class Config extends Framework\App\Helper\AbstractHelper
     const XML_CONFIG_STORE_ID = 'reviewscouk_reviews_setup/settings/store_id';
     const XML_CONFIG_PRODUCT_WIDGET_ENABLED = 'reviewscouk_reviews_onpage/widget/product_widget_enabled';
     const XML_CONFIG_PRODUCT_WIDGET_VERSION = 'reviewscouk_reviews_onpage/widget/product_widget_version';
+    const XML_CONFIG_USE_TAB_MODE = "reviewscouk_reviews_onpage/widget/tab_mode_enabled";
+
     const XML_CONFIG_PRODUCT_WIDGET_COLOUR = 'reviewscouk_reviews_onpage/widget/product_widget_colour';
+    const XML_CONFIG_QUESTION_WIDGET_ENABLED = 'reviewscouk_reviews_onpage/widget/question_widget_enabled';
     const XML_CONFIG_MERCHANT_RICH_SNIPPETS_ENABLED = 'reviewscouk_reviews_onpage/richsnippets/merchant_enabled';
     const XML_CONFIG_PRODUCT_RICH_SNIPPETS_ENABLED = 'reviewscouk_reviews_onpage/richsnippets/product_enabled';
     const XML_CONFIG_MERCHANT_REVIEWS_ENABLED = 'reviewscouk_reviews_automation/collection/merchant_enabled';
@@ -21,11 +24,18 @@ class Config extends Framework\App\Helper\AbstractHelper
     const XML_CONFIG_PRODUCT_FEED_ENABLED = 'reviewscouk_reviews_automation/product_feed/product_feed_enabled';
     const XML_CONFIG_USE_GROUP_SKU = "reviewscouk_reviews_advanced/settings/used_grouped_skus";
 
+
     private $config;
 
     public function __construct(Framework\App\Config\ScopeConfigInterface $scopeConfigInterface)
     {
         $this->config = $scopeConfigInterface;
+    }
+
+    public function isTabModeEnabled($magentoStore)
+    {
+        return $this->getValue(self::XML_CONFIG_USE_TAB_MODE, $magentoStore);
+
     }
 
     public function getRegion($magentoStore)
@@ -56,6 +66,13 @@ class Config extends Framework\App\Helper\AbstractHelper
     public function isProductWidgetEnabled($magentoStore)
     {
         return $this->getValue(self::XML_CONFIG_PRODUCT_WIDGET_ENABLED, $magentoStore);
+    }
+
+
+
+    public function isQuestionWidgetEnabled($magentoStore)
+    {
+        return $this->getValue(self::XML_CONFIG_QUESTION_WIDGET_ENABLED, $magentoStore);
     }
 
     public function isUsingGroupSkus($magentoStore)

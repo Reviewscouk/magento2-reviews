@@ -1,10 +1,31 @@
 <?xml version="1.0"?>
 <body>
+    <referenceContainer name="product.info.details">
+        <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
+               name="product.tab_review.widget"
+               template="Reviewscouk_Reviews::product/review_widget.phtml"
+               group="detailed_info">
+               <arguments>
+                <argument translate="true" name="title" xsi:type="string">Reviews</argument>
+              </arguments>
+        </block>
+
+        <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
+               name="product.tab_question.widget"
+               template="Reviewscouk_Reviews::product/questions_widget.phtml"
+               group="detailed_info">
+               <arguments>
+                <argument translate="true" name="title" xsi:type="string">Product Questions</argument>
+              </arguments>
+        </block>
+    </referenceContainer>
+
     <referenceContainer name="content">
         <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
                name="product.review.widget"
-               template="Reviewscouk_Reviews::product/review_widget.phtml"
+               template="Reviewscouk_Reviews::product/all_in_one.phtml"
                after="product.info.details">
         </block>
     </referenceContainer>
+
 </body>

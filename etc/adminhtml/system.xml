@@ -78,7 +78,7 @@
                 </comment>
                 <field id="product_feed_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
                        showInWebsite="1" showInStore="1">
-                    <label>Queue Merchant Review Emails:</label>
+                    <label>Enable Product Feed:</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
@@ -91,6 +91,8 @@
             <group id="widget" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                    showInStore="1">
                 <label>Product Reviews Widget</label>
+
+
                 <field id="product_widget_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Display Reviews Widget on Product Pages?</label>
@@ -105,6 +107,18 @@
                     <label>Display Reviews Widget on Product Pages?</label>
                     <source_model>Reviewscouk\Reviews\Model\Config\Source\Widgetversion</source_model>
                 </field>
+                <field id="question_widget_enabled" translate="label" type="select" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Display Question Answers Widget on Product Pages?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="tab_mode_enabled" translate="label" type="select" sortOrder="100" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Display Reviews Widgets in product info tabs</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
             </group>
             <group id="richsnippets" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
                    showInStore="1">

@@ -4,5 +4,9 @@
         <route id="reviewscouk_reviews" frontName="reviews">
             <module name="Reviewscouk_Reviews"/>
         </route>
+
+        <route id="reviewscouk_questions" frontName="questions">
+            <module name="Reviewscouk_Questions"/>
+        </route>
     </router>
 </config>

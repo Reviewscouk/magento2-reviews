@@ -1,6 +1,6 @@
 #Reviews.co.uk for Magento
 
-You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.uk") or [Reviews.io](https://www.reviews.io "Reviews.io")to use this plugin.
+You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.uk") or [Reviews.io](https://www.reviews.io "Reviews.io") to use this plugin.
 
 #Installation
 

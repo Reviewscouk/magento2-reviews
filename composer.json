@@ -10,7 +10,7 @@
   },
   "description": "Reviews.co.uk Magento 2 Integration",
   "type": "magento2-module",
-  "version": "0.0.7b",
+  "version": "0.0.8",
 
   "authors": [
     {

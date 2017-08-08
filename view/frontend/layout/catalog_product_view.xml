@@ -1,31 +1,34 @@
 <?xml version="1.0"?>
 <body>
-    <referenceContainer name="product.info.details">
-        <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
-               name="product.tab_review.widget"
-               template="Reviewscouk_Reviews::product/review_widget.phtml"
-               group="detailed_info">
-               <arguments>
-                <argument translate="true" name="title" xsi:type="string">Reviews</argument>
-              </arguments>
-        </block>
+    <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
 
-        <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
-               name="product.tab_question.widget"
-               template="Reviewscouk_Reviews::product/questions_widget.phtml"
-               group="detailed_info">
-               <arguments>
-                <argument translate="true" name="title" xsi:type="string">Product Questions</argument>
-              </arguments>
-        </block>
-    </referenceContainer>
+        <referenceContainer name="product.info.details">
+            <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
+                   name="product.tab_review.widget"
+                   template="Reviewscouk_Reviews::product/review_widget.phtml"
+                   group="detailed_info">
+                   <arguments>
+                    <argument translate="true" name="title" xsi:type="string">Reviews</argument>
+                  </arguments>
+            </block>
 
-    <referenceContainer name="content">
-        <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
-               name="product.review.widget"
-               template="Reviewscouk_Reviews::product/all_in_one.phtml"
-               after="product.info.details">
-        </block>
-    </referenceContainer>
+            <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
+                   name="product.tab_question.widget"
+                   template="Reviewscouk_Reviews::product/questions_widget.phtml"
+                   group="detailed_info">
+                   <arguments>
+                    <argument translate="true" name="title" xsi:type="string">Product Questions</argument>
+                  </arguments>
+            </block>
+        </referenceContainer>
 
+        <referenceContainer name="content">
+            <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
+                   name="product.review.widget"
+                   template="Reviewscouk_Reviews::product/all_in_one.phtml"
+                   after="product.info.details">
+            </block>
+        </referenceContainer>
+    </page>
 </body>

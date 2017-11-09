@@ -113,7 +113,7 @@ class Reviewwidget extends Framework\View\Element\Template
         $region = $this->configHelper->getRegion($this->store->getId());
         $api_url = 'widget.reviews.co.uk';
         if ($region == 'US') {
-            $api_url = 'widget.review.io';
+            $api_url = 'widget.reviews.io';
         }
         return $api_url;
     }

@@ -33,7 +33,7 @@ if ($block->isProductWidgetEnabled() && $block->isTabMode()){
         </script>
         <?php
     } else {
-        echo $block->escapeHtml($block->getStaticWidget());
+        echo $block->getStaticWidget();
     }
 }
 ?>

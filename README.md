@@ -1,17 +1,16 @@
-#Reviews.co.uk for Magento
+# Reviews.co.uk for Magento
 
 You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.uk") or [Reviews.io](https://www.reviews.io "Reviews.io") to use this plugin.
 
-#Installation
+# Installation
 
 1. Via command line, `cd` to Magento2 root folder
 
 2. As this plugin is hosted on [packagist.org](http://packagist.org), you simply use the following to instruct composer to fetch and install the module:
 
-
-    composer require reviewscouk/reviews:0.0.9c
-
-
+    ```bash
+    composer require reviewscouk/reviews:0.0.10
+    ```
 
 3. When this is complete, `cd` to `/bin` and run the following:
 

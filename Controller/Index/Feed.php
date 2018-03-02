@@ -60,6 +60,8 @@ class Feed extends Framework\App\Action\Action
                 $price = $product->getPrice();
                 $finalPrice = $product->getFinalPrice();
 
+                $image_url = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
+
                 $productFeed .= "<item>
                         <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
                         <title><![CDATA[" . $product->getName() . "]]></title>
@@ -68,7 +70,7 @@ class Feed extends Framework\App\Action\Action
                         <g:sale_price>" . number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() . "</g:sale_price>
                         <description><![CDATA[" . $product->getDescription() . "]]></description>
                         <g:condition>new</g:condition>
-                        <g:image_link>" . $product->getImageUrl() . "</g:image_link>
+                        <g:image_link>" . $image_url . "</g:image_link>
                         <g:brand><![CDATA[" . $brand . "]]></g:brand>
                         <g:mpn><![CDATA[" . $product->getSku() . "]]></g:mpn>
                         <g:product_type><![CDATA[" . $product->getTypeID() . "]]></g:product_type>

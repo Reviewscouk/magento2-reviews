@@ -61,8 +61,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                 $items = $order->getAllVisibleItems();
                 $p = array();
                 foreach ($items as $item) {
-                    $item = $this->productModel->load($item->getProductId());
-
+                    
                     if ($this->configHelper->isUsingGroupSkus($magento_store_id)) {
                         // If product is part of a grouped product, use the grouped product details.
                         $parentIds = $this->configProductModel->getParentIdsByChild($item->getId());

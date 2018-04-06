@@ -25,8 +25,9 @@ class Feed extends Framework\App\Action\Action
         CatalogInventory\Api\StockRegistryInterface $stockRegistryInterface,
         Catalog\Helper\Image $image,
         Store\Model\StoreManagerInterface $storeManagerInterface,
-        Reviews\Helper\Config $config
-    )
+        Reviews\Helper\Config $config,
+        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+     )
     {
         parent::__construct($context);
 
@@ -36,6 +37,20 @@ class Feed extends Framework\App\Action\Action
         $this->stockModel = $stockRegistryInterface;
         $this->imageHelper = $image;
         $this->storeModel = $storeManagerInterface;
+        $this->productCollectionFactory = $productCollectionFactory;
+    }
+
+    private function getProductCollection()
+    {
+        $collection = $this->productCollectionFactory->create();
+            /* Addtional */
+            $collection
+                ->addMinimalPrice()
+                ->addFinalPrice()
+                ->addTaxPercents()
+                ->addAttributeToSelect('*')
+                ->addUrlRewrite();
+            return $collection;
     }
 
     public function execute()
@@ -51,16 +66,13 @@ class Feed extends Framework\App\Action\Action
                     <title><![CDATA[" . $store->getName() . "]]></title>
                     <link>" . $store->getBaseUrl() . "</link>";
 
-            $products = $this->productModel->getCollection();
-            foreach ($products as $prod) {
-                $product = $this->productModel->load($prod->getId());
+            $products = $this->getProductCollection();
 
+            foreach ($products as $product) {
                 $brand = $product->getAttributeText('manufacturer') ? $product->getAttributeText('manufacturer') : 'Not Available';
-
                 $price = $product->getPrice();
-                $finalPrice = $product->getFinalPrice();
 
-                $image_url = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
+                $finalPrice = $product->getFinalPrice();
 
                 $productFeed .= "<item>
                         <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
@@ -70,7 +82,7 @@ class Feed extends Framework\App\Action\Action
                         <g:sale_price>" . number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() . "</g:sale_price>
                         <description><![CDATA[" . $product->getDescription() . "]]></description>
                         <g:condition>new</g:condition>
-                        <g:image_link>" . $image_url . "</g:image_link>
+                        <g:image_link>" . $product->getImageUrl() . "</g:image_link>
                         <g:brand><![CDATA[" . $brand . "]]></g:brand>
                         <g:mpn><![CDATA[" . $product->getSku() . "]]></g:mpn>
                         <g:product_type><![CDATA[" . $product->getTypeID() . "]]></g:product_type>

@@ -80,7 +80,7 @@ class Feed extends Framework\App\Action\Action
                         <link>" . $product->getProductUrl() . "</link>
                         <g:price>" . number_format($price, 2) . " " . $store->getCurrentCurrency()->getCode() . "</g:price>
                         <g:sale_price>" . number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() . "</g:sale_price>
-                        <description><![CDATA[" . $product->getDescription() . "]]></description>
+                        <description><![CDATA[]]></description>
                         <g:condition>new</g:condition>
                         <g:image_link>" . $product->getImageUrl() . "</g:image_link>
                         <g:brand><![CDATA[" . $brand . "]]></g:brand>

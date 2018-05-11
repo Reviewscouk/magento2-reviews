@@ -44,11 +44,17 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
             $magento_store_id = $order->getStoreId();
 
             if ($this->configHelper->getStoreId($magento_store_id) && $this->configHelper->getApiKey($magento_store_id) && $this->configHelper->isMerchantReviewsEnabled($magento_store_id)) {
+
+                $name = $order->getCustomerName();
+                if ($name == 'Guest') {
+                    $name = $order->getBillingAddress()->getFirstName();
+                }
+
                 $merchantResponse = $this->apiModel->apiPost(
                     'merchant/invitation',
                     [
                         'source' => 'magento',
-                        'name' => $order->getCustomerName(),
+                        'name' => $name,
                         'email' => $order->getCustomerEmail(),
                         'order_id' => $order->getRealOrderId(),
                     ],
@@ -79,11 +85,16 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                     ];
                 }
 
+                $name = $order->getCustomerName();
+                if ($name == 'Guest') {
+                    $name = $order->getBillingAddress()->getFirstName();
+                }
+                
                 $productResponse = $this->apiModel->apiPost(
                     'product/invitation',
                     [
                         'source' => 'magento',
-                        'name' => $order->getCustomerName(),
+                        'name' => $name,
                         'email' => $order->getCustomerEmail(),
                         'order_id' => $order->getRealOrderId(),
                         'products' => $p

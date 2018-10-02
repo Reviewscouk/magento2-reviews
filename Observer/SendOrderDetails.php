@@ -69,16 +69,16 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                 foreach ($items as $item) {
                     
                     if ($this->configHelper->isUsingGroupSkus($magento_store_id)) {
-                        // If product is part of a grouped product, use the grouped product details.
-                        $parentIds = $this->configProductModel->getParentIdsByChild($item->getId());
-                        if (!empty($parentIds)) {
-                            $item = $this->productModel->load($parentIds[0]);
+                        // If product is part of a configurable product, use the configurable product details.
+                        if ($item->getProduct()->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
+                            $productId = $item->getProduct()->getId();
+                            $item = $this->productModel->load($productId);
                         }
                     }
                     $imageUrl = $this->imageHelper->init($item, 'product_page_image_large')->getUrl();
                     $p[] = [
                         'image' => $imageUrl,
-                        'id' => $item->getProductId(),
+                        'id' => $item->getId(),
                         'sku' => $item->getSku(),
                         'name' => $item->getName(),
                         'pageUrl' => $item->getProductUrl()

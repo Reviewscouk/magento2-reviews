@@ -62,7 +62,7 @@ class Reviewwidget extends Framework\View\Element\Template
         $productSkus = $this->getProductSkus();
         $colour = $this->getWidgetColor();
 
-        $url = 'https://widget.reviews.co.uk/product-seo/widget?store=' . $store_id . '&sku=' .
+        $url = $this->getWidgetURL() . '/product-seo/widget?store=' . $store_id . '&sku=' .
             implode(';', $productSkus) . '&primaryClr=' . urlencode($colour);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);

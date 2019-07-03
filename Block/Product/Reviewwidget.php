@@ -63,7 +63,7 @@ class Reviewwidget extends Framework\View\Element\Template
         $colour = $this->getWidgetColor();
 
         $url = $this->getWidgetURL() . '/product-seo/widget?store=' . $store_id . '&sku=' .
-            implode(';', $productSkus) . '&primaryClr=' . urlencode($colour);
+            urlencode(trim(implode(';', $productSkus))) . '&primaryClr=' . urlencode($colour);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

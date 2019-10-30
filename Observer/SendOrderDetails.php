@@ -50,16 +50,13 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                     $name = $order->getBillingAddress()->getFirstName();
                 }
 
-                $merchantResponse = $this->apiModel->apiPost(
-                    'merchant/invitation',
-                    [
-                        'source' => 'magento',
-                        'name' => $name,
-                        'email' => $order->getCustomerEmail(),
-                        'order_id' => $order->getRealOrderId(),
-                    ],
-                    $magento_store_id
-                );
+                $merchantResponse = $this->apiModel->apiPost('merchant/invitation', [
+                    'source'       => 'magento',
+                    'name'         => $name,
+                    'email'        => $order->getCustomerEmail(),
+                    'order_id'     => $order->getRealOrderId(),
+                    'country_code' => $order->getShippingAddress()->getCountryId(),
+                ], $magento_store_id);
                 $this->apiModel->addStatusMessage($merchantResponse, "Merchant Review Invitation");
             }
 
@@ -90,17 +87,15 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                     $name = $order->getBillingAddress()->getFirstName();
                 }
                 
-                $productResponse = $this->apiModel->apiPost(
-                    'product/invitation',
-                    [
-                        'source' => 'magento',
-                        'name' => $name,
-                        'email' => $order->getCustomerEmail(),
-                        'order_id' => $order->getRealOrderId(),
-                        'products' => $p
-                    ],
-                    $magento_store_id
-                );
+                $productResponse = $this->apiModel->apiPost('product/invitation', [
+                    'source'       => 'magento',
+                    'name'         => $name,
+                    'email'        => $order->getCustomerEmail(),
+                    'order_id'     => $order->getRealOrderId(),
+                    'country_code' => $order->getShippingAddress()->getCountryId(),
+                    'products'     => $p
+                ], $magento_store_id);
+
                 $this->apiModel->addStatusMessage($productResponse, "Product Review Invitation");
 
             }

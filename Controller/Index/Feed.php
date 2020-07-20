@@ -83,7 +83,7 @@ class Feed extends Framework\App\Action\Action
                 $productFeed .= "<item>
                         <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
                         <title><![CDATA[" . $product->getName() . "]]></title>
-                        <link>" . $product->getProductUrl() . "</link>
+                        <link><![CDATA[" . $product->getProductUrl() . "]]></link>
                         <g:price>" . number_format($price, 2) . " " . $store->getCurrentCurrency()->getCode() . "</g:price>
                         <g:sale_price>" . number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() . "</g:sale_price>
                         <description><![CDATA[]]></description>

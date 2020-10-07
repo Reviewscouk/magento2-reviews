@@ -104,7 +104,7 @@
                 </field>
                 <field id="product_widget_version" translate="label" type="select" sortOrder="20" showInDefault="1"
                        showInWebsite="1" showInStore="1">
-                    <label>Display Reviews Widget on Product Pages?</label>
+                    <label>Product Page Reviews Widget Type</label>
                     <source_model>Reviewscouk\Reviews\Model\Config\Source\Widgetversion</source_model>
                 </field>
                 <field id="question_widget_enabled" translate="label" type="select" sortOrder="20" showInDefault="1"

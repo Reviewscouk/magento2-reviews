@@ -32,7 +32,88 @@ if ($block->isProductWidgetEnabled() && $block->isTabMode()){
             });
         </script>
         <?php
+    } elseif($block->isElementsWidget()) {
+
+          $_data = $block->getSettings();
+          $_skus = $block->getProductSkus();
+
+          ?>
+
+          <div id='ReviewsWidget'></div>
+
+          <link rel="stylesheet" href="https://d1azc1qln24ryf.cloudfront.net/40686/revsglobal-pr-mod/style-cf.css?-c0avz5">
+          <script src="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/combined/dist.js?v1"></script>
+          <link rel="stylesheet" href="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/combined/style.css?v1">
+          <script>
+                  new ReviewsWidget('#ReviewsWidget', {
+                  store: '<?php print $block->escapeHtml($_data['store_id']); ?>',
+                  widget: 'combined-widget',
+                  options: {
+                      types: 'product_review', // store_review,product_review,questions (choose what content you prefer to show in this widget)
+                      per_page: 20, // Any number (set how many reviews/questions you want to show per page)
+
+                      /* Product Reviews Settings */
+                      product_review: {
+                          sku: '<?php print $block->escapeHtml(implode(';', $_skus)); ?>', // Multiple SKU"s Seperated by Semi-Colons
+                          enable_write_review:true,
+                          enable_smart_filters:true,
+                          enable_rating_filters:true,
+                          enable_toggle_filters:true,
+                          enable_social_sharing:false,
+                          enable_helpful:false,
+                          enable_featured_review_photos:true,
+                          enable_featured_social_photos:true,
+                          show_mention_text:true,
+                          show_dates:true,
+                          show_replies:true,
+                          show_avatars:true,
+                          show_photos:true,
+                          show_verify_status:true
+
+                      },
+
+                  },
+
+                  /* Customise Colours & Fonts */
+                  styles: {
+                      starColor:'#f47e27',
+                      textColor:'#333333',
+                      primaryColor:'#333333',
+                      textColor:'#666666',
+                      neutralColor:'#ececec',
+                      backgroundColor:'#ffffff',
+                      formColor:'#dcdcdc',
+                      baseTextSize:'14px',
+                      header_style:''
+                  },
+
+                  /* Customise Buttons */
+                  buttons:{
+                      smart_filter:'solid',
+                      write_review:'solid',
+                      selected_page:'outline'
+                  },
+
+                  /* Avatar Settings */
+                  avatars:{
+                      enable_gravatar:true,
+                      gravatar_fallback:'identicon'
+                  },
+
+                  /* Other Options*/
+                  reviewsLogo:{
+                      show_logo:true,
+                      style:'black'
+                  }
+
+              });
+          </script>
+
+
+          <?php
+
     } else {
+
         print $block->getStaticWidget();
     }
 }

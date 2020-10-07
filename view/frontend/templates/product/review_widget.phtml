@@ -76,7 +76,7 @@ if ($block->isProductWidgetEnabled() && $block->isTabMode()){
 
                   /* Customise Colours & Fonts */
                   styles: {
-                      starColor:'#f47e27',
+                      starColor:'<?php /* @noEscape */ print $_data['colour']; ?>',
                       textColor:'#333333',
                       primaryColor:'#333333',
                       textColor:'#666666',

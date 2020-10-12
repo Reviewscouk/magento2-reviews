@@ -49,11 +49,14 @@ class Reviewwidget extends Framework\View\Element\Template
     {
         $productWidgetVersion = $this->configHelper->getProductWidgetVersion($this->store->getId());
 
-        if ($productWidgetVersion == '2') {
-            return false;
-        } else {
-            return true;
-        }
+        return ($productWidgetVersion == '1' ? true : false);
+    }
+
+    public function isElementsWidget()
+    {
+        $productWidgetVersion = $this->configHelper->getProductWidgetVersion($this->store->getId());
+
+        return ($productWidgetVersion == '3' ? true : false);
     }
 
     public function getStaticWidget()

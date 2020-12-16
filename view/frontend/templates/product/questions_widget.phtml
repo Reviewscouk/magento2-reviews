@@ -9,7 +9,7 @@ if ($block->isQuestionWidgetEnabled() && $block->isTabMode()){
         document.addEventListener("DOMContentLoaded", function() {
             questionsWidget('questions-widget', {
                 store: "<?php print $block->escapeHtml($_data['store_id']); ?>",
-                group: '<?php print $block->escapeHtml(implode(';', $_skus)); ?>', // Multiple SKU"s Seperated by Semi-Colons
+                group: '<?php print $block->escapeHtml((!empty($_skus[0]) ? $_skus[0] : "")); ?>', // Multiple SKU"s Seperated by Semi-Colons
             });
         });
     </script>

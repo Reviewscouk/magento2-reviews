@@ -9,7 +9,7 @@ You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.
 2. As this plugin is hosted on [packagist.org](http://packagist.org), you simply use the following to instruct composer to fetch and install the module:
 
     ```bash
-    composer require reviewscouk/reviews:0.0.30
+    composer require reviewscouk/reviews:0.0.31
     ```
 
 3. When this is complete, `cd` to `/bin` and run the following:

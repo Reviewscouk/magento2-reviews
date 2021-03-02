@@ -50,8 +50,12 @@ class Richsnippet extends Framework\View\Element\Template
 
             $product = [
                 'availability'  => $this->availability($current_product->getData('quantity_and_stock_status')['is_in_stock']),
-                'price'         => $current_product->getData('price'),
+                'price'         => $current_product->getFinalPrice(),
+                'url'         => $current_product->getProductUrl(),
+                'description'         => $current_product->getDescription(),
+                'mpn' => ($current_product->hasData('mpn') ? $current_product->getData('mpn') : $current_product->getSku()),
                 'priceCurrency' => $this->store->getDefaultCurrencyCode(),
+                'brand' => ($current_product->getAttributeText('manufacturer') ? $current_product->getAttributeText('manufacturer') : 'Not Available'),
             ];
 
             return $this->getRichSnippet($sku, $product);
@@ -79,10 +83,21 @@ class Richsnippet extends Framework\View\Element\Template
             store: "' . $storeName . '",
             sku:"' . $sku . '",
             data:{
-                type:"Offer",
-                availability: "' . (isset($product['availability']) ? $product['availability'] : null) . '",
-                price: "' . (isset($product['price']) ? $product['price'] : null) . '",
-                priceCurrency: "' . (isset($product['priceCurrency']) ? $product['priceCurrency'] : null) . '"
+              "url": "' . (isset($product['url']) ? $this->escapeHtml($product['url']): null) . '",
+              "description": "' . (isset($product['description']) ? $this->escapeHtml($product['description']) : null) . '",
+              "mpn": "' . (isset($product['mpn']) ? $this->escapeHtml($product['mpn']) : null) . '",
+              "offers" :[{
+                "@type":"Offer",
+                "availability": "' . (isset($product['availability']) ? $product['availability'] : null) . '",
+                "price": "' . (isset($product['price']) ? $product['price'] : null) . '",
+                "priceCurrency": "' . (isset($product['priceCurrency']) ? $product['priceCurrency'] : null) . '",
+                "url": "' . (isset($product['url']) ? $this->escapeHtml($product['url']) : null) . '",
+                "priceValidUntil": "' . date("Y-m-d", strtotime("+1 months")) . '",
+              }],
+              "brand": {
+               "@type": "Brand",
+               "name": "' . (isset($product['brand']) ? $this->escapeHtml($product['brand']) : null) . '",
+             }
             }
 
         })</script>';

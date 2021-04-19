@@ -52,7 +52,7 @@ class Reviewwidget extends Framework\View\Element\Template
         return ($productWidgetVersion == '1' ? true : false);
     }
 
-    public function isElementsWidget()
+    public function isPolarisWidget()
     {
         $productWidgetVersion = $this->configHelper->getProductWidgetVersion($this->store->getId());
 

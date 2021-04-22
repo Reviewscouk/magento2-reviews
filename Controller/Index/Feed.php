@@ -75,7 +75,7 @@ class Feed extends Framework\App\Action\Action
                 // Load image url via helper.
                 $imageUrl = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
 
-                $brand = $product->getAttributeText('manufacturer') ? $product->getAttributeText('manufacturer') : 'Not Available';
+                $brand = $product->hasData('manufacturer') ? $product->getAttributeText('manufacturer') : ($product->hasData('brand') ? $product->getAttributeText('brand') : 'Not Available');
                 $price = $product->getPrice();
 
                 $finalPrice = $product->getFinalPrice();

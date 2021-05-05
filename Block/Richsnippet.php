@@ -55,7 +55,7 @@ class Richsnippet extends Framework\View\Element\Template
                 'description'         => $current_product->getDescription(),
                 'mpn' => ($current_product->hasData('mpn') ? $current_product->getData('mpn') : $current_product->getSku()),
                 'priceCurrency' => $this->store->getDefaultCurrencyCode(),
-                'brand' => ($current_product->getAttributeText('manufacturer') ? $current_product->getAttributeText('manufacturer') : 'Not Available'),
+                'brand' => ($current_product->hasData('manufacturer') ? $current_product->getAttributeText('manufacturer') : ($current_product->hasData('brand') ? $current_product->getAttributeText('brand') : 'Not Available')),
             ];
 
             return $this->getRichSnippet($sku, $product);

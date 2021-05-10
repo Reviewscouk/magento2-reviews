@@ -88,7 +88,7 @@ class Feed extends Framework\App\Action\Action
                         <g:sale_price>" . number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() . "</g:sale_price>
                         <description><![CDATA[]]></description>
                         <g:condition>new</g:condition>
-                        <g:image_link>" . $imageUrl . "</g:image_link>
+                        <g:image_link><![CDATA[" . $imageUrl . "]]></g:image_link>
                         <g:brand><![CDATA[" . $brand . "]]></g:brand>
                         <g:mpn><![CDATA[" . ($product->hasData('mpn') ? $product->getData('mpn') : $product->getSku()). "]]></g:mpn>
                         <g:gtin><![CDATA[" . ($product->hasData('gtin') ? $product->getData('gtin') : ''). "]]></g:mpn>

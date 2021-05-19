@@ -124,7 +124,7 @@ class Feed extends Framework\App\Action\Action
             // TODO:- Implement caching of feed
 
             print $productFeed;
-            // exit();
+            exit();
         } else {
             print "Product Feed is disabled.";
         }

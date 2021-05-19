@@ -56,6 +56,7 @@ class Feed extends Framework\App\Action\Action
     public function execute()
     {
         // Set timelimit to 0 to avoid timeouts when generating feed.
+        ob_start();
         set_time_limit(0);
 
         $store = $this->storeModel->getStore();
@@ -124,7 +125,7 @@ class Feed extends Framework\App\Action\Action
             // TODO:- Implement caching of feed
 
             print $productFeed;
-            exit();
+            // exit();
         } else {
             print "Product Feed is disabled.";
         }

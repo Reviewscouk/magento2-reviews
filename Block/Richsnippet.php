@@ -84,7 +84,7 @@ class Richsnippet extends Framework\View\Element\Template
             sku:"' . $sku . '",
             data:{
               "url": "' . (isset($product['url']) ? $this->escapeHtml($product['url']): null) . '",
-              "description": "' . (isset($product['description']) ? $this->escapeHtml($product['description']) : null) . '",
+              "description": "' . (isset($product['description']) ? strip_tags(str_replace(array("\r", "\n", '"'), '', $product['description'])) : null) . '",
               "mpn": "' . (isset($product['mpn']) ? $this->escapeHtml($product['mpn']) : null) . '",
               "offers" :[{
                 "@type":"Offer",

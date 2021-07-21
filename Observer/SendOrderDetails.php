@@ -64,10 +64,10 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                 $items = $order->getAllVisibleItems();
                 $p = array();
                 foreach ($items as $item) {
-                    
+
                     if ($this->configHelper->isUsingGroupSkus($magento_store_id)) {
                         // If product is part of a configurable product, use the configurable product details.
-                        if ($item->getProduct()->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
+                        if ($item->getProduct()->getTypeId() == 'simple' || $item->getProduct()->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
                             $productId = $item->getProduct()->getId();
                             $item = $this->productModel->load($productId);
                         }
@@ -86,7 +86,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                 if ($name == 'Guest') {
                     $name = $order->getBillingAddress()->getFirstName();
                 }
-                
+
                 $productResponse = $this->apiModel->apiPost('product/invitation', [
                     'source'       => 'magento',
                     'name'         => $name,

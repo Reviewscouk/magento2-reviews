@@ -23,8 +23,8 @@ You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.
 
 This extension requires a Store ID and an API key, obtained from your account area on [Reviews.co.uk](http://www.reviews.co.uk/) or [Reviews.io](http://www.reviews.io/). To find these details;
 
-1. Log into your account, and navigate to `Company Setup -> Publish Reviews`
-2. Then, select _Publishing API_
+1. Log into your account, and navigate to `Integrations`
+2. Then, select _Magento_
 3. Here, you'll find your __Store ID__ and __API Key__ required by the module.
 
 To configure the module, log into your Magento Administration panel (ensuring the module is correctly installed) and then;

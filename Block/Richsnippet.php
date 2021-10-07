@@ -47,12 +47,11 @@ class Richsnippet extends Framework\View\Element\Template
         if ($current_product && $product_enabled) {
 
             $sku = $this->dataHelper->getProductSkus($current_product);
-
             $product = [
                 'availability'  => $this->availability($current_product->getData('quantity_and_stock_status')['is_in_stock']),
                 'price'         => $current_product->getFinalPrice(),
                 'url'         => $current_product->getProductUrl(),
-                'description'         => $current_product->getDescription(),
+                'description'         => $current_product->getMetaDescription(),
                 'mpn' => ($current_product->hasData('mpn') ? $current_product->getData('mpn') : $current_product->getSku()),
                 'priceCurrency' => $this->store->getDefaultCurrencyCode(),
                 'brand' => ($current_product->hasData('manufacturer') ? $current_product->getAttributeText('manufacturer') : ($current_product->hasData('brand') ? $current_product->getAttributeText('brand') : 'Not Available')),
@@ -84,7 +83,7 @@ class Richsnippet extends Framework\View\Element\Template
             sku:"' . $sku . '",
             data:{
               "url": "' . (isset($product['url']) ? $this->escapeHtml($product['url']): null) . '",
-              "description": "' . (isset($product['description']) ? strip_tags(str_replace(array("\r", "\n", '"'), '', $product['description'])) : null) . '",
+              "description": `' . (isset($product['description']) ? $product['description'] : null) . '`,
               "mpn": "' . (isset($product['mpn']) ? $this->escapeHtml($product['mpn']) : null) . '",
               "offers" :[{
                 "@type":"Offer",

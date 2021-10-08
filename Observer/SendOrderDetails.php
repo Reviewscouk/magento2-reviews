@@ -43,23 +43,6 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
         try {
             $magento_store_id = $order->getStoreId();
 
-            if ($this->configHelper->getStoreId($magento_store_id) && $this->configHelper->getApiKey($magento_store_id) && $this->configHelper->isMerchantReviewsEnabled($magento_store_id)) {
-
-                $name = $order->getCustomerName();
-                if ($name == 'Guest') {
-                    $name = $order->getBillingAddress()->getFirstName();
-                }
-
-                $merchantResponse = $this->apiModel->apiPost('merchant/invitation', [
-                    'source'       => 'magento',
-                    'name'         => $name,
-                    'email'        => $order->getCustomerEmail(),
-                    'order_id'     => $order->getRealOrderId(),
-                    'country_code' => $order->getShippingAddress()->getCountryId(),
-                ], $magento_store_id);
-                $this->apiModel->addStatusMessage($merchantResponse, "Merchant Review Invitation");
-            }
-
             if ($this->configHelper->getStoreId($magento_store_id) && $this->configHelper->getApiKey($magento_store_id) && $this->configHelper->isProductReviewsEnabled($magento_store_id)) {
                 $items = $order->getAllVisibleItems();
                 $p = array();
@@ -87,7 +70,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                     $name = $order->getBillingAddress()->getFirstName();
                 }
 
-                $productResponse = $this->apiModel->apiPost('product/invitation', [
+                $productResponse = $this->apiModel->apiPost('/invitation', [
                     'source'       => 'magento',
                     'name'         => $name,
                     'email'        => $order->getCustomerEmail(),

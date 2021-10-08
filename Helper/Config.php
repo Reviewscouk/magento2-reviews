@@ -19,7 +19,6 @@ class Config extends Framework\App\Helper\AbstractHelper
     const XML_CONFIG_QUESTION_WIDGET_ENABLED = 'reviewscouk_reviews_onpage/widget/question_widget_enabled';
     const XML_CONFIG_MERCHANT_RICH_SNIPPETS_ENABLED = 'reviewscouk_reviews_onpage/richsnippets/merchant_enabled';
     const XML_CONFIG_PRODUCT_RICH_SNIPPETS_ENABLED = 'reviewscouk_reviews_onpage/richsnippets/product_enabled';
-    const XML_CONFIG_MERCHANT_REVIEWS_ENABLED = 'reviewscouk_reviews_automation/collection/merchant_enabled';
     const XML_CONFIG_PRODUCT_REVIEWS_ENABLED = 'reviewscouk_reviews_automation/collection/product_enabled';
     const XML_CONFIG_PRODUCT_FEED_ENABLED = 'reviewscouk_reviews_automation/product_feed/product_feed_enabled';
     const XML_CONFIG_USE_GROUP_SKU = "reviewscouk_reviews_advanced/settings/used_grouped_skus";
@@ -76,11 +75,6 @@ class Config extends Framework\App\Helper\AbstractHelper
     public function isUsingGroupSkus($magentoStore)
     {
         return $this->getValue(self::XML_CONFIG_USE_GROUP_SKU, $magentoStore);
-    }
-
-    public function isMerchantReviewsEnabled($magentoStore)
-    {
-        return $this->getValue(self::XML_CONFIG_MERCHANT_REVIEWS_ENABLED, $magentoStore);
     }
 
     public function isProductReviewsEnabled($magentoStore)

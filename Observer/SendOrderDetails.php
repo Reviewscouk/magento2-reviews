@@ -20,7 +20,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
     public function __construct(
         Reviews\Helper\Config $config,
         Reviews\Model\Api $api,
-        Catalog\Model\Product $product,
+        Catalog\Model\ProductFactory $product,
         Catalog\Helper\Image $image,
         ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable $configurable
     ) {
@@ -52,7 +52,8 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                         // If product is part of a configurable product, use the configurable product details.
                         if ($item->getProduct()->getTypeId() == 'simple' || $item->getProduct()->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
                             $productId = $item->getProduct()->getId();
-                            $item = $this->productModel->load($productId);
+                            $model = $this->productModel->create();
+                            $item = $model->load($productId);
                         }
                     }
                     $imageUrl = $this->imageHelper->init($item, 'product_page_image_large')->getUrl();

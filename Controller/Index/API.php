@@ -40,7 +40,7 @@ class API extends Framework\App\Action\Action
         $this->productCollectionFactory = $productCollectionFactory;
     }
 
-    private function getProductCollection($page)
+    private function getProductCollection($page, $perPage)
     {
         $collection = $this->productCollectionFactory->create();
             /* Addtional */
@@ -50,7 +50,7 @@ class API extends Framework\App\Action\Action
                 ->addTaxPercents()
                 ->addAttributeToSelect('*')
                 ->addUrlRewrite()
-                ->setPageSize(100)
+                ->setPageSize($perPage)
                 ->setCurPage($page);
             return $collection;
     }
@@ -67,6 +67,7 @@ class API extends Framework\App\Action\Action
         if ($productFeedEnabled) {
 
             $auth['page'] = !empty($_GET['page']) ? $_GET['page'] : '1';
+            $auth['per_page'] = !empty($_GET['per_page']) ? (int) $_GET['per_page'] : 100;
             $auth['submitted_key'] = !empty($_GET['key']) ? $_GET['key'] : '';
 
             //Authenticate
@@ -75,7 +76,7 @@ class API extends Framework\App\Action\Action
               die();
             }
 
-            $products = $this->getProductCollection($auth['page']);
+            $products = $this->getProductCollection($auth['page'], $auth['per_page']);
 
             $collection = [];
 
@@ -113,7 +114,7 @@ class API extends Framework\App\Action\Action
                     $product->getId(),
                     $product->getStore()->getWebsiteId()
                 );
-                
+
                 $item['in_stock'] = $stock->getIsInStock() ? true : false;
 
                 $collection[] = $item;

@@ -67,7 +67,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                 }
 
                 $name = $order->getCustomerName();
-                if ($name == 'Guest') {
+                if ($order->getCustomerIsGuest()) {
                     $name = $order->getBillingAddress()->getFirstName();
                 }
 

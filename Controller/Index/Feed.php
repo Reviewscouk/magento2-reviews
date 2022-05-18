@@ -92,7 +92,7 @@ class Feed extends Framework\App\Action\Action
                         <g:image_link><![CDATA[" . $imageUrl . "]]></g:image_link>
                         <g:brand><![CDATA[" . $brand . "]]></g:brand>
                         <g:mpn><![CDATA[" . ($product->hasData('mpn') ? $product->getData('mpn') : $product->getSku()). "]]></g:mpn>
-                        <g:gtin><![CDATA[" . ($product->hasData('gtin') ? $product->getData('gtin') : ''). "]]></g:gtin>
+                        <g:gtin><![CDATA[" . ($product->hasData('gtin') ? $product->getData('gtin') : ($product->hasData('upc') ? $product->getData('upc') : '')). "]]></g:gtin>
                         <g:product_type><![CDATA[" . $product->getTypeID() . "]]></g:product_type>
                         <g:shipping>
                         <g:country>UK</g:country>

@@ -97,7 +97,7 @@ class API extends Framework\App\Action\Action
                   'image_link' => $imageUrl,
                   'brand' => $brand,
                   'mpn' => ($product->hasData('mpn') ? $product->getData('mpn') : $product->getSku()),
-                  'gtin' => ($product->hasData('gtin') ? $product->getData('gtin') : ''),
+                  'gtin' => ($product->hasData('gtin') ? $product->getData('gtin') : ($product->hasData('upc') ? $product->getData('upc') : '')),
                   'product_type' => $product->getTypeID(),
                 ];
 

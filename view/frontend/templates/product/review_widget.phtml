@@ -6,7 +6,7 @@ if ($block->isProductWidgetEnabled() && $block->isTabMode()){
         ?>
         <script src="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/product/dist.js"></script>
         <div id="widget"></div>
-        <script type="text/javascript">
+        <script>
             productWidget("widget", {
                 store: '<?php print $block->escapeHtml($_data['store_id']); ?>',
                 sku: '<?php print $block->escapeHtml(implode(';', $_skus)); ?>', // Multiple SKU"s Seperated by Semi-Colons

@@ -20,7 +20,7 @@
 
 							<p>To configure this plugin you need to have your API credentials, which can be found on your Reviews.co.uk dashboard.</p>
 
-							<p>Log into the <strong>Dashboard</strong> and go to <strong>Company Setup</strong> > <strong>Publish Reviews</strong> > <strong>Publishing API</strong></p>
+							<p>Log into the <strong>Dashboard</strong> and go to <strong>Integrations</strong> > <strong>Magento</strong></p>
 
 							<p>Copy the Store ID and API Key into <strong>API Settings</strong> section of this page.</p>
 						</div>

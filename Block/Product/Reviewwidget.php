@@ -108,6 +108,9 @@ class Reviewwidget extends Framework\View\Element\Template
     protected function getWidgetColor()
     {
         $colour = $this->configHelper->getProductWidgetColour($this->store->getId());
+        if (is_null($colour)) {
+            return;
+        }
         // people will sometimes put hash and sometimes they will forgot so we need to check for this error
         if (strpos($colour, '#') === false) {
             $colour = '#' . $colour;

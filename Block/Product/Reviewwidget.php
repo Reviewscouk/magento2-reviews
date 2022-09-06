@@ -89,6 +89,7 @@ class Reviewwidget extends Framework\View\Element\Template
             'store_id' => $this->configHelper->getStoreId($this->store->getId()),
             'api_url' => $this->getWidgetURL(),
             'colour' => $this->getWidgetColor(),
+            'syndication' => $this->getSyndicationEnabled()
         ];
 
         return $data;
@@ -103,6 +104,15 @@ class Reviewwidget extends Framework\View\Element\Template
         }
 
         return $skus;
+    }
+
+    protected function getSyndicationEnabled()
+    {
+        if ($this->configHelper->isSyndicationEnabled($this->store->getId())) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     protected function getWidgetColor()

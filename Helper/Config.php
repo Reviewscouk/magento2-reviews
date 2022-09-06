@@ -23,6 +23,7 @@ class Config extends Framework\App\Helper\AbstractHelper
     const XML_CONFIG_PRODUCT_FEED_ENABLED = 'reviewscouk_reviews_automation/product_feed/product_feed_enabled';
     const XML_CONFIG_USE_GROUP_SKU = "reviewscouk_reviews_advanced/settings/used_grouped_skus";
 
+    const XML_CONFIG_SYNDICATION_ENABLED = 'reviewscouk_reviews_advanced/settings/syndication_enabled';
 
     private $config;
 
@@ -75,6 +76,11 @@ class Config extends Framework\App\Helper\AbstractHelper
     public function isUsingGroupSkus($magentoStore)
     {
         return $this->getValue(self::XML_CONFIG_USE_GROUP_SKU, $magentoStore);
+    }
+
+    public function isSyndicationEnabled($magentoStore)
+    {
+        return $this->getValue(self::XML_CONFIG_SYNDICATION_ENABLED, $magentoStore);
     }
 
     public function isProductReviewsEnabled($magentoStore)

@@ -49,7 +49,9 @@ if (!$block->isTabMode()) {
                 //Your REVIEWS.io account ID and widget type:
                 store: '<?php print $block->escapeHtml($_data['store_id']); ?>',
                 widget: 'polaris',
-
+                <?php if (isset($_data['syndication']) && $_data['syndication']) { ?>
+                enable_syndication: true,
+                <?php } ?>
                 //Content settings (store_review,product_review,questions). Choose what to display in this widget:
                 options: {
                   types: 'product_review',

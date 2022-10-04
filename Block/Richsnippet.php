@@ -47,8 +47,14 @@ class Richsnippet extends Framework\View\Element\Template
         if ($current_product && $product_enabled) {
 
             $sku = $this->dataHelper->getProductSkus($current_product);
+
+            $productAvailability = $this->availability();
+            if (array_key_exists('is_in_stock', $current_product->getData('quantity_and_stock_status'))) {
+                $productAvailability = $this->availability($current_product->getData('quantity_and_stock_status')['is_in_stock']);
+            }
+
             $product = [
-                'availability'  => $this->availability($current_product->getData('quantity_and_stock_status')['is_in_stock']),
+                'availability'  => $productAvailability,
                 'price'         => $current_product->getFinalPrice(),
                 'url'         => $current_product->getProductUrl(),
                 'description'         => $current_product->getMetaDescription(),

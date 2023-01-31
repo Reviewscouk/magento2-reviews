@@ -48,9 +48,11 @@ class Richsnippet extends Framework\View\Element\Template
 
             $sku = $this->dataHelper->getProductSkus($current_product);
 
-            $productAvailability = $this->availability();
-            if (array_key_exists('is_in_stock', $current_product->getData('quantity_and_stock_status'))) {
-                $productAvailability = $this->availability($current_product->getData('quantity_and_stock_status')['is_in_stock']);
+
+            $productAvailability = null;
+            $stockStatus = $current_product->getData('quantity_and_stock_status');
+            if ($stockStatus && array_key_exists('is_in_stock', $stockStatus)) {
+                $productAvailability = $this->availability($stockStatus['is_in_stock']);
             }
 
             $product = [
@@ -64,7 +66,6 @@ class Richsnippet extends Framework\View\Element\Template
             ];
 
             return $this->getRichSnippet($sku, $product);
-
         } else if ($merchant_enabled) {
             return $this->getRichSnippet();
         }
@@ -88,7 +89,7 @@ class Richsnippet extends Framework\View\Element\Template
             store: "' . $storeName . '",
             sku:"' . $sku . '",
             data:{
-              "url": "' . (isset($product['url']) ? $this->escapeHtml($product['url']): null) . '",
+              "url": "' . (isset($product['url']) ? $this->escapeHtml($product['url']) : null) . '",
               "description": `' . (isset($product['description']) ? $product['description'] : null) . '`,
               "mpn": "' . (isset($product['mpn']) ? $this->escapeHtml($product['mpn']) : null) . '",
               "offers" :[{

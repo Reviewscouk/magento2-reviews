@@ -50,7 +50,7 @@ if ($block->isProductWidgetEnabled() && $block->isTabMode()) {
 
                 //Content settings (store_review,product_review,questions). Choose what to display in this widget:
                 options: {
-                    types: 'product_review<?php if ($block->isPolarisQuestionWidget()) { ?>,questions<?php } ?>',
+                    types: 'product_review<?php if ($block->isQuestionWidgetEnabled() && $block->isPolarisQuestionWidget()) { ?>,questions<?php } ?>',
                     lang: 'en',
                     //Possible layout options: bordered, large and reverse.
                     layout: '',

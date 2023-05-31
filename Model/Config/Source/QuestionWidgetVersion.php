@@ -15,7 +15,7 @@ class QuestionWidgetVersion implements Framework\Option\ArrayInterface
     public function toOptionArray()
     {
         return [
-            ['value' => '2', 'label' => __('Questions via Product Reviews Widget')],
+            ['value' => '2', 'label' => __('Questions tab on Product Reviews Widget')],
             ['value' => '1', 'label' => __('Legacy Question Widget')],
         ];
     }
@@ -28,7 +28,7 @@ class QuestionWidgetVersion implements Framework\Option\ArrayInterface
     public function toArray()
     {
         return [
-            '2' => __('Question via Product Reviews Widget'),
+            '2' => __('Questions tab on Product Reviews Widget'),
             '1' => __('Legacy Question Widget'),
         ];
     }

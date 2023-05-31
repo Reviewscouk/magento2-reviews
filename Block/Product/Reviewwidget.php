@@ -59,6 +59,13 @@ class Reviewwidget extends Framework\View\Element\Template
         return ($productWidgetVersion == '3' ? true : false);
     }
 
+    public function isPolarisQuestionWidget()
+    {
+        $questionWidgetVersion = $this->configHelper->getQuestionWidgetVersion($this->store->getId());
+
+        return ($questionWidgetVersion == '2' ? true : false);
+    }
+
     public function getStaticWidget()
     {
         $store_id = $this->configHelper->getStoreId($this->store->getId());

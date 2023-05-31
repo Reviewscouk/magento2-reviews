@@ -113,6 +113,11 @@
                     <label>Show Q&amp;A Widget on Product Pages?</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                 <field id="question_widget_version" translate="label" type="select" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Q&amp;A Review Widget Type</label>
+                    <source_model>Reviewscouk\Reviews\Model\Config\Source\QuestionWidgetVersion</source_model>
+                </field>
 
             </group>
             <group id="richsnippets" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"

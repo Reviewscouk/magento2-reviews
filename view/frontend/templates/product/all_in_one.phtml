@@ -39,7 +39,6 @@ if (!$block->isTabMode()) {
           $_skus = $block->getProductSkus();
 
           ?>
-
           <div id='ReviewsWidget'></div>
 
           <script src="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/polaris/build.js"></script>
@@ -52,7 +51,7 @@ if (!$block->isTabMode()) {
 
                 //Content settings (store_review,product_review,questions). Choose what to display in this widget:
                 options: {
-                  types: 'product_review',
+                  types: 'product_review<?php if ($block->isPolarisQuestionWidget()) { ?>,questions<?php } ?>',
                   lang: 'en',
                   //Possible layout options: bordered, large and reverse.
                   layout: '',
@@ -239,7 +238,7 @@ if (!$block->isTabMode()) {
     }
     ?>
     <?php
-    if ($block->isQuestionWidgetEnabled()){
+    if ($block->isQuestionWidgetEnabled() && !$block->isPolarisQuestionWidget()){
         $_data = $block->getSettings();
         $_skus = $block->getProductSkus();
     ?>

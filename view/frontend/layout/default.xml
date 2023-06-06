@@ -6,5 +6,10 @@
             <block class="Reviewscouk\Reviews\Block\Richsnippet" name="reviews.rich.snippet" as="reviews_snippet"
                    after="-" template="Reviewscouk_Reviews::rich_snippet.phtml"/>
         </referenceContainer>
+
+        <referenceContainer name="before.body.end">
+            <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget" name="reviews.rating.snippet" as="reviews_rating_snippet"
+                   after="-" template="Reviewscouk_Reviews::rating_snippet.phtml"/>
+        </referenceContainer>
     </body>
 </page>

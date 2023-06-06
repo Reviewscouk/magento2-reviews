@@ -3,6 +3,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceContainer name="product.info.details">
+
             <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
                    name="product.tab_review.widget"
                    template="Reviewscouk_Reviews::product/review_widget.phtml"
@@ -19,6 +20,16 @@
                    <arguments>
                     <argument translate="true" name="title" xsi:type="string">Product Questions</argument>
                   </arguments>
+            </block>
+        </referenceContainer>
+
+        <referenceContainer name="page.main.title">
+            <block class="Reviewscouk\Reviews\Block\Product\Reviewwidget"
+                name="product.rating_snippet_widget"
+                template="Reviewscouk_Reviews::product/rating_snippet_element.phtml">
+                <arguments>
+                    <argument translate="true" name="title" xsi:type="string">Product Rating Snippet</argument>
+                </arguments>
             </block>
         </referenceContainer>
 

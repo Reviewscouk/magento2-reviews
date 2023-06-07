@@ -118,7 +118,7 @@
                         list.phtml file with a copy included via
                         "vendor/reviewscouk/reviews/view/frontend/layout/catalog_category_view.xml".
                         Please disable this setting if you experience an issue or conflict with
-                        other our category or search plugins.</comment>
+                        other category or search plugins.</comment>
                 </field>
                 
 

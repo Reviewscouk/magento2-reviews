@@ -1,0 +1,22 @@
+<!-- Reviews.co.uk Rating Snippet -->
+<?php
+if ($block->isProductRatingSnippetWidgetEnabled() || $block->isCategoryRatingSnippetWidgetEnabled()) {
+    $_data = $block->getSettings();
+?>
+    <script src="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/rating-snippet/dist.js"></script>
+    <link rel="stylesheet" href="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/rating-snippet/dist.css" />
+    <script>
+        ratingSnippet("ruk_rating_snippet", {
+            store: "<?php print $block->escapeHtml($_data['store_id']); ?>",
+            mode: "default",
+            color: "<?php /* @noEscape */ print $_data["colour"]; ?>",
+            linebreak: false,
+            text: "Reviews",
+            singularText: "Review",
+            lang: "en",
+            usePolaris: true,
+            showEmptyStars: false,
+        });
+    </script>
+<?php
+}

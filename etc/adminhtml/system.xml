@@ -83,19 +83,49 @@
             <label>On Page Content</label>
             <tab>reviewscouk</tab>
             <resource>Reviewscouk_Reviews::onpage</resource>
+            
+
             <group id="widget" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                    showInStore="1">
                 <label>Product Reviews Widget</label>
 
+                <comment>
+                    <![CDATA[
+						<div style="width:100%;text-align:center;">
+                            <h3>Perform a Magento view cache clear after updating these settings to see changes.</h3>
+						</div>
+						]]>
+                </comment>
 
                 <field id="product_widget_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Show Product Review Widget?</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+
+                <field id="product_rating_snippet_widget_enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Show Product Rating Snippet Widget?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="category_rating_snippet_widget_enabled" translate="label" type="select"
+                    sortOrder="10" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Show Category Rating Snippet Widget?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Setting this option to "Yes" will override the default mangeto catalog
+                        list.phtml file with a copy included via
+                        "vendor/reviewscouk/reviews/view/frontend/layout/catalog_category_view.xml".
+                        Please disable this setting if you experience an issue or conflict with
+                        other category or search plugins.</comment>
+                </field>
+                
+
                 <field id="product_widget_colour" translate="label" type="text" sortOrder="15" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Product Review Widget Star Colour:</label>
+                    <comment>For example: #ffc107</comment>
                 </field>
                 <field id="product_widget_version" translate="label" type="select" sortOrder="20" showInDefault="1"
                        showInWebsite="1" showInStore="1">
@@ -118,8 +148,8 @@
                     <label>Q&amp;A Review Widget Type</label>
                     <source_model>Reviewscouk\Reviews\Model\Config\Source\QuestionWidgetVersion</source_model>
                 </field>
-
             </group>
+
             <group id="richsnippets" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
                    showInStore="1">
                 <label>Rich Snippets</label>

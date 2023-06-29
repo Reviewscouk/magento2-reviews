@@ -7,31 +7,45 @@ use Magento\Catalog as Catalog;
 use Magento\CatalogInventory as CatalogInventory;
 use Magento\Store as Store;
 use Reviewscouk\Reviews as Reviews;
+use Magento\Framework\App\Action\HttpGetActionInterface as HttpGetActionInterface;
+use Magento\Framework\App\Action\HttpPostActionInterface as HttpPostActionInterface;
+use Magento\Framework\Cache\Core;
+use Magento\Catalog\Model\Product;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Catalog\Helper\Image;
+use Magento\Store\Model\StoreManagerInterface;
+use Reviewscouk\Reviews\Helper\Config;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Framework\HTTP\Client\Curl;
 
-class Feed extends Framework\App\Action\Action
+class Feed implements HttpGetActionInterface
 {
 
-    private $configHelper;
-    private $cache;
-    private $productModel;
-    private $stockModel;
-    private $imageHelper;
-    private $storeModel;
+    protected $configHelper;
+    protected $cache;
+    protected $productModel;
+    protected $stockModel;
+    protected $imageHelper;
+    protected $storeModel;
+    protected $productCollectionFactory;
+    protected $configurableType;
+    protected $curl;
 
     public function __construct(
-        Framework\App\Action\Context $context,
-        Framework\Cache\Core $core,
-        Catalog\Model\Product $product,
-        CatalogInventory\Api\StockRegistryInterface $stockRegistryInterface,
-        Catalog\Helper\Image $image,
-        Store\Model\StoreManagerInterface $storeManagerInterface,
-        Reviews\Helper\Config $config,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
-        \Magento\ConfigurableProduct\Model\Product\Type\Configurable $configurableType,
-        \Magento\Framework\HTTP\Client\Curl $curl
-     )
+        //Framework\App\Action\Context $context,
+        Core $core,
+        Product $product,
+        StockRegistryInterface $stockRegistryInterface,
+        Image $image,
+        StoreManagerInterface $storeManagerInterface,
+        Config $config,
+        CollectionFactory $productCollectionFactory,
+        Configurable $configurableType,
+        Curl $curl
+    )
     {
-        parent::__construct($context);
+        // parent::__construct($context);
 
         $this->configHelper = $config;
         $this->cache = $core;

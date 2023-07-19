@@ -18,10 +18,10 @@ use Reviewscouk\Reviews\Helper\Config;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\HTTP\Client\Curl;
+use Magento\Framework\Controller\ResultFactory;
 
 class Feed implements HttpGetActionInterface
 {
-
     protected $configHelper;
     protected $cache;
     protected $productModel;
@@ -31,6 +31,7 @@ class Feed implements HttpGetActionInterface
     protected $productCollectionFactory;
     protected $configurableType;
     protected $curl;
+    protected $resultFactory;
 
     public function __construct(
         //Framework\App\Action\Context $context,
@@ -42,9 +43,9 @@ class Feed implements HttpGetActionInterface
         Config $config,
         CollectionFactory $productCollectionFactory,
         Configurable $configurableType,
-        Curl $curl
-    )
-    {
+        Curl $curl,
+        ResultFactory $resultFactory
+    ) {
         // parent::__construct($context);
 
         $this->configHelper = $config;
@@ -56,19 +57,20 @@ class Feed implements HttpGetActionInterface
         $this->productCollectionFactory = $productCollectionFactory;
         $this->configurableType = $configurableType;
         $this->curl = $curl;
+        $this->resultFactory = $resultFactory;
     }
 
     private function getProductCollection()
     {
         $collection = $this->productCollectionFactory->create();
-            /* Addtional */
-            $collection
-                ->addMinimalPrice()
-                ->addFinalPrice()
-                ->addTaxPercents()
-                ->addAttributeToSelect('*')
-                ->addUrlRewrite();
-            return $collection;
+        /* Addtional */
+        $collection
+            ->addMinimalPrice()
+            ->addFinalPrice()
+            ->addTaxPercents()
+            ->addAttributeToSelect('*')
+            ->addUrlRewrite();
+        return $collection;
     }
 
     private function validateImageUrl($imageUrl)
@@ -79,7 +81,7 @@ class Feed implements HttpGetActionInterface
             CURLOPT_NOBODY => true,
         ];
 
-        if(strpos($imageUrl, "Magento_Catalog/images/product/placeholder/image.jpg") !== false){
+        if (strpos($imageUrl, "Magento_Catalog/images/product/placeholder/image.jpg") !== false) {
             return false;
         }
 
@@ -97,7 +99,7 @@ class Feed implements HttpGetActionInterface
         try {
             $this->curl->get($url);
             $this->curl->setOptions($options);
-        
+
             if ($this->curl->getStatus() == 200) {
                 return true;
             }
@@ -130,7 +132,7 @@ class Feed implements HttpGetActionInterface
                 $groupedParentId = null;
                 $configurableParentId = null;
                 $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-                
+
                 if ($objectManager->create('Magento\GroupedProduct\Model\Product\Type\Grouped')->getParentIdsByChild($product->getId())) {
                     $groupedParentId = $objectManager->create('Magento\GroupedProduct\Model\Product\Type\Grouped')->getParentIdsByChild($product->getId());
                 }
@@ -140,7 +142,7 @@ class Feed implements HttpGetActionInterface
 
                 $parentId = null;
                 $parentProduct = null;
-                
+
                 if (isset($groupedParentId[0])) {
                     $parentId = $groupedParentId[0];
                 } else if (isset($configurableParentId[0])) {
@@ -151,10 +153,10 @@ class Feed implements HttpGetActionInterface
                 $productImageUrl = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
                 $imageLink = $productImageUrl;
                 $productUrl = $product->getProductUrl();
-                
+
                 if (isset($parentId)) {
                     $parentProduct = $objectManager->create('Magento\Catalog\Model\Product')->load($parentId);
-                    
+
                     $parentProductImageUrl = $this->imageHelper->init($parentProduct, 'product_page_image_large')->getUrl();
                     $validVariantImage = $this->validateImageUrl($productImageUrl);
                     if (!$validVariantImage) {
@@ -163,7 +165,7 @@ class Feed implements HttpGetActionInterface
 
                     $productUrl = $parentProduct->getProductUrl();
                 }
-                
+
                 $brand = $product->hasData('manufacturer') ? $product->getAttributeText('manufacturer') : ($product->hasData('brand') ? $product->getAttributeText('brand') : 'Not Available');
                 $price = $product->getPrice();
                 $finalPrice = $product->getFinalPrice();
@@ -178,8 +180,8 @@ class Feed implements HttpGetActionInterface
                         <g:condition>new</g:condition>
                         <g:image_link><![CDATA[" . $imageLink . "]]></g:image_link>
                         <g:brand><![CDATA[" . $brand . "]]></g:brand>
-                        <g:mpn><![CDATA[" . ($product->hasData('mpn') ? $product->getData('mpn') : $product->getSku()). "]]></g:mpn>
-                        <g:gtin><![CDATA[" . ($product->hasData('gtin') ? $product->getData('gtin') : ($product->hasData('upc') ? $product->getData('upc') : '')). "]]></g:gtin>
+                        <g:mpn><![CDATA[" . ($product->hasData('mpn') ? $product->getData('mpn') : $product->getSku()) . "]]></g:mpn>
+                        <g:gtin><![CDATA[" . ($product->hasData('gtin') ? $product->getData('gtin') : ($product->hasData('upc') ? $product->getData('upc') : '')) . "]]></g:gtin>
                         <g:product_type><![CDATA[" . $product->getTypeID() . "]]></g:product_type>
                         <g:shipping>
                         <g:country>UK</g:country>
@@ -212,7 +214,10 @@ class Feed implements HttpGetActionInterface
 
             // TODO:- Implement caching of feed
 
-            print $productFeed;
+            $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+            $result->setContents($productFeed);
+
+            return $result;
             // exit();
         } else {
             print "Product Feed is disabled.";

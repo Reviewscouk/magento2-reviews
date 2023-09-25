@@ -41,7 +41,7 @@ class Feed implements HttpGetActionInterface
      * @param CategoryCollectionFactory         $categoryCollectionFactory
      */
     public function __construct(
-        private readonly StockRegistryInterface            $stockModel, // StockRegistryInterface is deprecated.
+        private readonly StockRegistryInterface            $stockModel, # StockRegistryInterface is deprecated.
         private readonly Image                             $imageHelper,
         private readonly StoreManagerInterface             $storeModel,
         private readonly Config                            $configHelper,
@@ -71,9 +71,9 @@ class Feed implements HttpGetActionInterface
         // Set timelimit to 0 to avoid timeouts when generating feed.
         ob_start();
         set_time_limit(0);
-        // Basically not good solution. Even with that, timeout can be thrown with many products.
-        // Consider using pagination as for API Controller and remove the ob_start and set_time_limit
-        // Eventually create cron, that would create the Feed in the background and the controller would only display it
+        # Basically not good solution. Even with that, timeout can be thrown with many products.
+        # Consider using pagination as for API Controller and remove the ob_start and set_time_limit
+        # Eventually create cron, that would create the Feed in the background and the controller would only display it
 
         // TODO:- Implement caching of Feed
         $productFeed = "<?xml version='1.0'?>
@@ -88,14 +88,13 @@ class Feed implements HttpGetActionInterface
 
             /** @var ProductInterface $product */
             foreach ($productCollection as $product) {
-
                 // Load image url via helper.
                 $productImageUrl = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
                 $imageLink = $productImageUrl;
                 $productUrl = $product->getProductUrl();
 
                 $parentProduct = $this->provideParentProduct($product);
-                if (!is_null($parentProduct)) {
+                if ($parentProduct !== null) {
                     $parentProductImageUrl = $this->imageHelper
                         ->init($parentProduct, 'product_page_image_large')->getUrl();
 
@@ -117,7 +116,7 @@ class Feed implements HttpGetActionInterface
                 $price = $product->getPrice();
                 $finalPrice = $product->getFinalPrice();
 
-                // I dont think, UK should be hardcoded as Shipping. The implementation of it is not very pretty.
+                # I dont think, UK should be hardcoded as Shipping. The implementation of it is not very pretty.
                 $productFeed .= "
         <item>
             <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
@@ -138,8 +137,8 @@ class Feed implements HttpGetActionInterface
             <g:price>0 GBP</g:price>
             </g:shipping>";
 
-                // If You really need to provide also Category names, the Category collection have to be loaded as well.
-                // It is not very optimized for many products.
+                # If You really need to provide also Category names, the Category collection have to be loaded as well.
+                # It is not very optimized for many products.
                 $categoryIds = $product->getCategoryIds();
                 try {
                     $categoryCollection = $this->categoryCollectionFactory->create()
@@ -149,7 +148,7 @@ class Feed implements HttpGetActionInterface
                     $categoryCollection = null;
                 }
 
-                if (!is_null($categoryCollection) && count($categoryCollection) > 0) {
+                if ($categoryCollection !== null && count($categoryCollection) > 0) {
                     foreach ($categoryCollection as $category) {
                         $productFeed .= sprintf(
                             "\n\t\t\t<g:google_product_category><![CDATA[%s]]></g:google_product_category>",
@@ -158,16 +157,16 @@ class Feed implements HttpGetActionInterface
                     }
                 }
 
-                // The StockRegistryInterface is deprecated. Implemented logic will not reflect real Stock Status.
-                // See https://developer.adobe.com/commerce/php/development/components/web-api/inventory-management/
-                // For quicker resolve, consider using $product->isSalable() instead $stock->getIsInStock()
-                // Otherwise if Shop uses MSI load StockInventories and check availability there
+                # The StockRegistryInterface is deprecated. Implemented logic will not reflect real Stock Status.
+                # See https://developer.adobe.com/commerce/php/development/components/web-api/inventory-management/
+                # For quicker resolve, consider using $product->isSalable() instead $stock->getIsInStock()
+                # Otherwise if Shop uses MSI load StockInventories and check availability there
                 $stock = $this->stockModel->getStockItem(
                     $product->getId(),
                     $product->getStore()->getWebsiteId()
                 );
                 if ($stock->getIsInStock()) {
-                //if ($product->isSalable()) {
+                    #if ($product->isSalable()) {
                     $productFeed .= "\n\t\t\t<g:availability>in stock</g:availability>";
                 } else {
                     $productFeed .= "\n\t\t\t<g:availability>out of stock</g:availability>";
@@ -185,7 +184,7 @@ class Feed implements HttpGetActionInterface
         $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
         $result->setContents($productFeed);
 
-        ob_end_clean(); //Should occur when using ob_start
+        ob_end_clean(); #Should occur when using ob_start
 
         return $result;
     }
@@ -201,8 +200,8 @@ class Feed implements HttpGetActionInterface
     {
         $collection = $this->productCollectionFactory->create();
 
-        // If You want to use Collection, do not load all Attributes if not required. Especially with big collection.
-        // Add just required attributes.
+        # If You want to use Collection, do not load all Attributes if not required. Especially with big collection.
+        # Add just required attributes.
         $collection
             ->addMinimalPrice()
             ->addFinalPrice()

@@ -36,15 +36,14 @@ class API implements HttpGetActionInterface
      * @param ResultFactory             $resultFactory
      */
     public function __construct(
-        private readonly StockRegistryInterface $stockModel,
-        private readonly Image $imageHelper,
-        private readonly StoreManagerInterface $storeModel,
-        private readonly Config $configHelper,
-        private readonly CollectionFactory $productCollectionFactory,
-        private readonly Http $request,
+        private readonly StockRegistryInterface    $stockModel,
+        private readonly Image                     $imageHelper,
+        private readonly StoreManagerInterface     $storeModel,
+        private readonly Config                    $configHelper,
+        private readonly CollectionFactory         $productCollectionFactory,
+        private readonly Http                      $request,
         private readonly CategoryCollectionFactory $categoryCollectionFactory,
         private readonly ResultFactory             $resultFactory,
-
     ) {
     }
 
@@ -72,7 +71,7 @@ class API implements HttpGetActionInterface
             return $result;
         }
 
-        if($this->canAccessResource($store->getId())) {
+        if ($this->canAccessResource($store->getId())) {
             $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
             $result->setContents(
                 json_encode(
@@ -93,7 +92,7 @@ class API implements HttpGetActionInterface
         foreach ($products as $product) {
             // Load image url via helper. Refers to every occurrence in module
             $imageUrl = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
-            // Basically nested ternary operator should not be used.
+            # Nested ternary operator should not be used. Change to if or so.
             $brand = $product->hasData('manufacturer')
                 ?: ($product->hasData('brand') ? $product->getAttributeText('brand') : 'Not Available');
             $price = $product->getPrice();
@@ -116,7 +115,7 @@ class API implements HttpGetActionInterface
 
             $item['category'] = [];
 
-            // Basically the same as for Feed. Moreover, it can be moved to Model or Service - Its used by Api and Feed
+            # Basically the same as for Feed. Moreover, it can be moved to Model or Service - Its used by Api and Feed
             $categoryIds = $product->getCategoryIds();
             try {
                 $categoryCollection = $this->categoryCollectionFactory->create()
@@ -126,13 +125,13 @@ class API implements HttpGetActionInterface
                 $categoryCollection = null;
             }
 
-            if (!is_null($categoryCollection) && count($categoryCollection) > 0) {
+            if ($categoryCollection !== null && count($categoryCollection) > 0) {
                 foreach ($categoryCollection as $category) {
                     $item['category'][] =  $category->getName();
                 }
             }
 
-            // Basically the same as for Feed. Moreover, it can be moved to Model or Service - Its used by Api and Feed
+            # Basically the same as for Feed. Moreover, it can be moved to Model or Service - Its used by Api and Feed
             $stock = $this->stockModel->getStockItem(
                 $product->getId(),
                 $product->getStore()->getWebsiteId()
@@ -163,10 +162,10 @@ class API implements HttpGetActionInterface
     private function canAccessResource(int $storeId): bool
     {
         $auth['actual_key'] = $this->configHelper->getApiKey($storeId);
-        $auth['submitted_key'] = !empty($_GET['key']) ? $_GET['key'] : '';
+        $auth['submitted_key'] = $this->request->getParam('key') ?: '';
 
         //Authenticate
-        if(!isset($auth['submitted_key'], $auth['actual_key']) || $auth['actual_key'] != $auth['submitted_key']) {
+        if (!isset($auth['submitted_key'], $auth['actual_key']) || $auth['actual_key'] != $auth['submitted_key']) {
             return false;
         }
 
@@ -176,7 +175,7 @@ class API implements HttpGetActionInterface
     /**
      * Provide page of product collection
      *
-     * Basically the same as for Feed. Can be moved to Model
+     * # Basically the same as for Feed. Can be moved to Model
      *
      * @return Collection
      */

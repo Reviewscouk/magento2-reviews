@@ -145,8 +145,8 @@ class Feed implements HttpGetActionInterface
             <g:condition>new</g:condition>
             <g:image_link><![CDATA[" . $imageLink . "]]></g:image_link>
             <g:brand><![CDATA[" . $brand . "]]></g:brand>
-            <g:mpn><![CDATA[" . ($product->hasData('mpn') ? $product->getData('mpn') : $product->getSku()) . "]]></g:mpn>
-            <g:gtin><![CDATA[" . ($product->hasData('gtin') ? $product->getData('gtin') : ($product->hasData('upc') ? $product->getData('upc') : '')) . "]]></g:gtin>
+            <g:mpn><![CDATA[" . ($product->hasData('mpn') ?: $product->getSku()) . "]]></g:mpn>
+            <g:gtin><![CDATA[" . ($product->hasData('gtin') ?: ($product->hasData('upc') ?: '')) . "]]></g:gtin>
             <g:product_type><![CDATA[" . $product->getTypeID() . "]]></g:product_type>
             <g:shipping>
             <g:country>UK</g:country>
@@ -224,7 +224,7 @@ class Feed implements HttpGetActionInterface
             ->addMinimalPrice()
             ->addFinalPrice()
             ->addTaxPercents()
-            ->addAttributeToSelect(['name', 'manufacturer', 'gtin', 'brand', 'image'])
+            ->addAttributeToSelect(['name', 'manufacturer', 'gtin', 'brand', 'image', 'upc', 'mpn'])
             ->addUrlRewrite()
             ->setPageSize(2)
             ->setCurPage($page);

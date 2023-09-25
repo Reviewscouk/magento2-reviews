@@ -23,8 +23,6 @@ use Reviewscouk\Reviews\Helper\Config;
  */
 class API implements HttpGetActionInterface
 {
-
-
     /**
      * API Constructor
      *
@@ -64,17 +62,24 @@ class API implements HttpGetActionInterface
 
         if (!$productFeedEnabled) {
             $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
-            $result->setContents(json_encode(['success' => false, 'message' => 'API disabled.'], JSON_THROW_ON_ERROR));
+            $result->setContents(
+                json_encode(
+                    ['success' => false, 'message' => 'API disabled.'],
+                    JSON_THROW_ON_ERROR
+                )
+            );
 
             return $result;
         }
 
-        $auth['page'] = $this->request->getParam('page') ?: '1';
-        $auth['per_page'] = $this->request->getParam('per_page') ?: 100;
-
         if($this->canAccessResource($store->getId())) {
             $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
-            $result->setContents(json_encode(['success' => false, 'message' => 'Unauthenticated.'], JSON_THROW_ON_ERROR));
+            $result->setContents(
+                json_encode(
+                    ['success' => false, 'message' => 'Unauthenticated.'],
+                    JSON_THROW_ON_ERROR
+                )
+            );
 
             return $result;
         }
@@ -89,7 +94,8 @@ class API implements HttpGetActionInterface
             // Load image url via helper. Refers to every occurrence in module
             $imageUrl = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
             // Basically nested ternary operator should not be used.
-            $brand = $product->hasData('manufacturer') ?: ($product->hasData('brand') ? $product->getAttributeText('brand') : 'Not Available');
+            $brand = $product->hasData('manufacturer')
+                ?: ($product->hasData('brand') ? $product->getAttributeText('brand') : 'Not Available');
             $price = $product->getPrice();
             $finalPrice = $product->getFinalPrice();
 
@@ -97,8 +103,10 @@ class API implements HttpGetActionInterface
                 'id' => $product->getSku(),
                 'title' => $product->getName(),
                 'link' => $product->getProductUrl(),
-                'price' => (!empty($price) ? number_format($price, 2) . " " . $store->getCurrentCurrency()->getCode() : ''),
-                'sale_price' => (!empty($finalPrice) ? number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() : ''),
+                'price' => !empty($price)
+                    ? number_format($price, 2) . " " . $store->getCurrentCurrency()->getCode() : '',
+                'sale_price' => !empty($finalPrice)
+                    ? number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() : '',
                 'image_link' => $imageUrl,
                 'brand' => $brand,
                 'mpn' => $product->hasData('mpn') ?: $product->getSku(),
@@ -129,14 +137,18 @@ class API implements HttpGetActionInterface
                 $product->getId(),
                 $product->getStore()->getWebsiteId()
             );
-
             $item['in_stock'] = (bool)$stock->getIsInStock();
 
             $collection[] = $item;
         }
 
         $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
-        $result->setContents(json_encode(['success' => true, 'products' => $collection, 'total' => count($collection)], JSON_THROW_ON_ERROR));
+        $result->setContents(
+            json_encode(
+                ['success' => true, 'products' => $collection, 'total' => count($collection)],
+                JSON_THROW_ON_ERROR
+            )
+        );
 
         return $result;
     }

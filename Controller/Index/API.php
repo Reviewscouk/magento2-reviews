@@ -1,131 +1,188 @@
 <?php
+/**
+ * Add Your COPPYRIGHTS here
+ *
+ * See COPYING.txt for license details.
+ */
 
 namespace Reviewscouk\Reviews\Controller\Index;
 
-use Magento\Framework as Framework;
-use Magento\Catalog as Catalog;
-use Magento\CatalogInventory as CatalogInventory;
-use Magento\Store as Store;
-use Reviewscouk\Reviews as Reviews;
+use Magento\Catalog\Helper\Image;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
+use Magento\Catalog\Model\ResourceModel\Product\Collection;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\Request\Http;
+use Magento\Framework\Controller\ResultFactory;
+use Magento\Store\Model\StoreManagerInterface;
+use Reviewscouk\Reviews\Helper\Config;
 
-class API extends Framework\App\Action\Action
+/**
+ * Api Controller - prepare list of products and format it to json format
+ */
+class API implements HttpGetActionInterface
 {
 
-    private $configHelper;
-    private $cache;
-    private $productModel;
-    private $stockModel;
-    private $imageHelper;
-    private $storeModel;
 
+    /**
+     * API Constructor
+     *
+     * @param StockRegistryInterface    $stockModel
+     * @param Image                     $imageHelper
+     * @param StoreManagerInterface     $storeModel
+     * @param Config                    $configHelper
+     * @param CollectionFactory         $productCollectionFactory
+     * @param Http                      $request
+     * @param CategoryCollectionFactory $categoryCollectionFactory
+     * @param ResultFactory             $resultFactory
+     */
     public function __construct(
-        Framework\App\Action\Context $context,
-        Framework\Cache\Core $core,
-        Catalog\Model\Product $product,
-        CatalogInventory\Api\StockRegistryInterface $stockRegistryInterface,
-        Catalog\Helper\Image $image,
-        Store\Model\StoreManagerInterface $storeManagerInterface,
-        Reviews\Helper\Config $config,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     )
-    {
-        parent::__construct($context);
+        private readonly StockRegistryInterface $stockModel,
+        private readonly Image $imageHelper,
+        private readonly StoreManagerInterface $storeModel,
+        private readonly Config $configHelper,
+        private readonly CollectionFactory $productCollectionFactory,
+        private readonly Http $request,
+        private readonly CategoryCollectionFactory $categoryCollectionFactory,
+        private readonly ResultFactory             $resultFactory,
 
-        $this->configHelper = $config;
-        $this->cache = $core;
-        $this->productModel = $product;
-        $this->stockModel = $stockRegistryInterface;
-        $this->imageHelper = $image;
-        $this->storeModel = $storeManagerInterface;
-        $this->productCollectionFactory = $productCollectionFactory;
+    ) {
     }
 
-    private function getProductCollection($page, $perPage)
-    {
-        $collection = $this->productCollectionFactory->create();
-            /* Addtional */
-            $collection
-                ->addMinimalPrice()
-                ->addFinalPrice()
-                ->addTaxPercents()
-                ->addAttributeToSelect('*')
-                ->addUrlRewrite()
-                ->setPageSize($perPage)
-                ->setCurPage($page);
-            return $collection;
-    }
-
+    /**
+     * @inheritDoc
+     *
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws \JsonException
+     */
     public function execute()
     {
+        $store = $this->storeModel->getStore();
+        $productFeedEnabled = $this->configHelper->isProductFeedEnabled($store->getId());
+
+        if (!$productFeedEnabled) {
+            $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+            $result->setContents(json_encode(['success' => false, 'message' => 'API disabled.'], JSON_THROW_ON_ERROR));
+
+            return $result;
+        }
+
+        $auth['page'] = $this->request->getParam('page') ?: '1';
+        $auth['per_page'] = $this->request->getParam('per_page') ?: 100;
+
+        if($this->canAccessResource($store->getId())) {
+            $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+            $result->setContents(json_encode(['success' => false, 'message' => 'Unauthenticated.'], JSON_THROW_ON_ERROR));
+
+            return $result;
+        }
+
         ob_start();
         set_time_limit(0);
 
-        $store = $this->storeModel->getStore();
-        $productFeedEnabled = $this->configHelper->isProductFeedEnabled($store->getId());
-        $auth['actual_key'] = $this->configHelper->getApiKey($store->getId());
+        $products = $this->getProductCollection();
+        $collection = [];
 
-        if ($productFeedEnabled) {
+        foreach ($products as $product) {
+            // Load image url via helper. Refers to every occurrence in module
+            $imageUrl = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
+            // Basically nested ternary operator should not be used.
+            $brand = $product->hasData('manufacturer') ?: ($product->hasData('brand') ? $product->getAttributeText('brand') : 'Not Available');
+            $price = $product->getPrice();
+            $finalPrice = $product->getFinalPrice();
 
-            $auth['page'] = !empty($_GET['page']) ? $_GET['page'] : '1';
-            $auth['per_page'] = !empty($_GET['per_page']) ? (int) $_GET['per_page'] : 100;
-            $auth['submitted_key'] = !empty($_GET['key']) ? $_GET['key'] : '';
+            $item = [
+                'id' => $product->getSku(),
+                'title' => $product->getName(),
+                'link' => $product->getProductUrl(),
+                'price' => (!empty($price) ? number_format($price, 2) . " " . $store->getCurrentCurrency()->getCode() : ''),
+                'sale_price' => (!empty($finalPrice) ? number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() : ''),
+                'image_link' => $imageUrl,
+                'brand' => $brand,
+                'mpn' => $product->hasData('mpn') ?: $product->getSku(),
+                'gtin' => $product->hasData('gtin') ?: ($product->hasData('upc') ?: ''),
+                'product_type' => $product->getTypeID(),
+            ];
 
-            //Authenticate
-            if(!isset($auth['submitted_key'], $auth['actual_key']) || $auth['actual_key'] != $auth['submitted_key']) {
-              echo json_encode(array('success' => false, 'message' => 'Unauthenticated.'));
-              die();
+            $item['category'] = [];
+
+            // Basically the same as for Feed. Moreover, it can be moved to Model or Service - Its used by Api and Feed
+            $categoryIds = $product->getCategoryIds();
+            try {
+                $categoryCollection = $this->categoryCollectionFactory->create()
+                    ->addAttributeToSelect(['name'])
+                    ->addAttributeToFilter('entity_id', $categoryIds);
+            } catch (\Exception $e) {
+                $categoryCollection = null;
             }
 
-            $products = $this->getProductCollection($auth['page'], $auth['per_page']);
-
-            $collection = [];
-
-            foreach ($products as $product) {
-                // Load image url via helper.
-                $imageUrl = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
-                $brand = $product->hasData('manufacturer') ? $product->getAttributeText('manufacturer') : ($product->hasData('brand') ? $product->getAttributeText('brand') : 'Not Available');
-                $price = $product->getPrice();
-
-                $finalPrice = $product->getFinalPrice();
-
-                $item = [
-                  'id' => $product->getSku(),
-                  'title' => $product->getName(),
-                  'link' => $product->getProductUrl(),
-                  'price' => (!empty($price) ? number_format($price, 2) . " " . $store->getCurrentCurrency()->getCode() : ''),
-                  'sale_price' => (!empty($finalPrice) ? number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() : ''),
-                  'image_link' => $imageUrl,
-                  'brand' => $brand,
-                  'mpn' => ($product->hasData('mpn') ? $product->getData('mpn') : $product->getSku()),
-                  'gtin' => ($product->hasData('gtin') ? $product->getData('gtin') : ($product->hasData('upc') ? $product->getData('upc') : '')),
-                  'product_type' => $product->getTypeID(),
-                ];
-
-                $item['category'] = [];
-
-                $categoryCollection = $product->getCategoryCollection();
-                if (count($categoryCollection) > 0) {
-                    foreach ($categoryCollection as $category) {
-                        $item['category'][] =  $category->getName();
-                    }
+            if (!is_null($categoryCollection) && count($categoryCollection) > 0) {
+                foreach ($categoryCollection as $category) {
+                    $item['category'][] =  $category->getName();
                 }
-
-                $stock = $this->stockModel->getStockItem(
-                    $product->getId(),
-                    $product->getStore()->getWebsiteId()
-                );
-
-                $item['in_stock'] = $stock->getIsInStock() ? true : false;
-
-                $collection[] = $item;
             }
 
-            echo json_encode(array('success' => true, 'products' => $collection, 'total' => count($collection)));
-            die();
+            // Basically the same as for Feed. Moreover, it can be moved to Model or Service - Its used by Api and Feed
+            $stock = $this->stockModel->getStockItem(
+                $product->getId(),
+                $product->getStore()->getWebsiteId()
+            );
 
-        } else {
-          echo json_encode(array('success' => false, 'message' => 'API disabled.'));
-          die();
+            $item['in_stock'] = (bool)$stock->getIsInStock();
+
+            $collection[] = $item;
         }
+
+        $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+        $result->setContents(json_encode(['success' => true, 'products' => $collection, 'total' => count($collection)], JSON_THROW_ON_ERROR));
+
+        return $result;
+    }
+
+    /**
+     * Check if Controller can be accessed.
+     *
+     * @param int $storeId
+     *
+     * @return bool
+     */
+    private function canAccessResource(int $storeId): bool
+    {
+        $auth['actual_key'] = $this->configHelper->getApiKey($storeId);
+        $auth['submitted_key'] = !empty($_GET['key']) ? $_GET['key'] : '';
+
+        //Authenticate
+        if(!isset($auth['submitted_key'], $auth['actual_key']) || $auth['actual_key'] != $auth['submitted_key']) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Provide page of product collection
+     *
+     * Basically the same as for Feed. Can be moved to Model
+     *
+     * @return Collection
+     */
+    private function getProductCollection(): Collection
+    {
+        $page = $this->request->getParam('page') ?: '1';
+        $perPage = $this->request->getParam('per_page') ?: 10;
+
+        $collection = $this->productCollectionFactory->create();
+        $collection
+            ->addMinimalPrice()
+            ->addFinalPrice()
+            ->addTaxPercents()
+            ->addAttributeToSelect(['name', 'manufacturer', 'gtin', 'brand', 'image', 'upc', 'mpn'])
+            ->addUrlRewrite()
+            ->setPageSize($perPage)
+            ->setCurPage($page);
+
+        return $collection;
     }
 }

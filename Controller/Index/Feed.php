@@ -15,6 +15,7 @@ use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable as ConfigurableTypeResourceModel;
 use Magento\Framework;
 use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\Store\Model\StoreManagerInterface;
@@ -25,23 +26,13 @@ use Reviewscouk\Reviews\Helper\Config;
  */
 class Feed implements HttpGetActionInterface
 {
-    private Config $configHelper;
-    private StockRegistryInterface $stockModel;
-    private Image $imageHelper;
-    private StoreManagerInterface $storeModel;
-    private CollectionFactory $productCollectionFactory;
-    private ResultFactory $resultFactory;
-    private Grouped $groupedProductModel;
-    private ConfigurableTypeResourceModel $configurableProductModel;
-    private ProductRepositoryInterfaceFactory $productRepositoryFactory;
-
     /**
-     * Feed Constructor
+     * Constructor for Feed
      *
-     * @param StockRegistryInterface            $stockRegistryInterface
-     * @param Image                             $image
-     * @param StoreManagerInterface             $storeManagerInterface
-     * @param Config                            $config
+     * @param StockRegistryInterface            $stockModel
+     * @param Image                             $imageHelper
+     * @param StoreManagerInterface             $storeModel
+     * @param Config                            $configHelper
      * @param CollectionFactory                 $productCollectionFactory
      * @param ResultFactory                     $resultFactory
      * @param Grouped                           $groupedProductModel
@@ -49,40 +40,26 @@ class Feed implements HttpGetActionInterface
      * @param ProductRepositoryInterfaceFactory $productRepositoryFactory
      */
     public function __construct(
-        StockRegistryInterface          $stockRegistryInterface, // StockRegistryInterface is deprecated.
-        Image                           $image,
-        StoreManagerInterface           $storeManagerInterface,
-        Config                          $config,
-        CollectionFactory               $productCollectionFactory,
-        ResultFactory                   $resultFactory,
-        Grouped                         $groupedProductModel,
-        ConfigurableTypeResourceModel   $configurableProductModel,
-        ProductRepositoryInterfaceFactory $productRepositoryFactory
+        private readonly StockRegistryInterface            $stockModel, // StockRegistryInterface is deprecated.
+        private readonly Image                             $imageHelper,
+        private readonly StoreManagerInterface             $storeModel,
+        private readonly Config                            $configHelper,
+        private readonly CollectionFactory                 $productCollectionFactory,
+        private readonly ResultFactory                     $resultFactory,
+        private readonly Grouped                           $groupedProductModel,
+        private readonly ConfigurableTypeResourceModel     $configurableProductModel,
+        private readonly ProductRepositoryInterfaceFactory $productRepositoryFactory
     ) {
-        $this->configHelper = $config;
-        $this->stockModel = $stockRegistryInterface;
-        $this->imageHelper = $image;
-        $this->storeModel = $storeManagerInterface;
-        $this->productCollectionFactory = $productCollectionFactory;
-        $this->resultFactory = $resultFactory;
-        $this->groupedProductModel = $groupedProductModel;
-        $this->configurableProductModel = $configurableProductModel;
-        $this->productRepositoryFactory = $productRepositoryFactory;
     }
 
     /**
-     * Return feed of all products
-     *
-     * @return Framework\App\ResponseInterface|Framework\Controller\Result\Raw
-     * @throws Framework\Exception\LocalizedException
-     * @throws Framework\Exception\NoSuchEntityException
+     * @inheritDoc
      */
     public function execute()
     {
         $store = $this->storeModel->getStore();
 
-        $productFeedEnabled = $this->configHelper->isProductFeedEnabled($store->getId());
-        if (!$productFeedEnabled) {
+        if (!$this->configHelper->isProductFeedEnabled($store->getId())) {
             $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
             $result->setContents("Product Feed is disabled");
 
@@ -91,7 +68,9 @@ class Feed implements HttpGetActionInterface
 
         // Set timelimit to 0 to avoid timeouts when generating feed.
         ob_start();
-        set_time_limit(0); // even with that, timeout can be thrown with many products.
+        set_time_limit(0);
+        // Basically not good solution. Even with that, timeout can be thrown with many products.
+        // Consider using pagination as for API Controller and remove the ob_start and set_time_limit
 
         // TODO:- Implement caching of Feed
         $productFeed = "<?xml version='1.0'?>
@@ -179,6 +158,8 @@ class Feed implements HttpGetActionInterface
                     }
                 }
 
+                // The StockRegistryInterface is deprecated.
+                // See https://developer.adobe.com/commerce/php/development/components/web-api/inventory-management/
                 $stock = $this->stockModel->getStockItem(
                     $product->getId(),
                     $product->getStore()->getWebsiteId()
@@ -202,7 +183,7 @@ class Feed implements HttpGetActionInterface
         $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
         $result->setContents($productFeed);
 
-        ob_end_clean();
+        ob_end_clean(); //Should occur when using ob_start
 
         return $result;
     }

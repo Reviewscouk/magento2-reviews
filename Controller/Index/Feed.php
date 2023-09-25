@@ -89,33 +89,17 @@ class Feed implements HttpGetActionInterface
             /** @var ProductInterface $product */
             foreach ($productCollection as $product) {
 
-                $parentId = null;
-                if ($this->groupedProductModel->getParentIdsByChild($product->getId())) {
-                    $groupedParentId = $this->groupedProductModel->getParentIdsByChild($product->getId());
-                    if (isset($groupedParentId[0])) {
-                        $parentId = $groupedParentId[0];
-                    }
-                }
-                if ($this->configurableProductModel->getParentIdsByChild($product->getId())) {
-                    $configurableParentId = $this->configurableProductModel->getParentIdsByChild($product->getId());
-                    if (isset($configurableParentId[0])) {
-                        $parentId = $configurableParentId[0];
-                    }
-                }
-
                 // Load image url via helper.
                 $productImageUrl = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
                 $imageLink = $productImageUrl;
                 $productUrl = $product->getProductUrl();
 
-                if (isset($parentId)) {
-                    $parentProduct = $this->productRepositoryFactory->create()->getById($parentId);
-
+                $parentProduct = $this->provideParentProduct($product);
+                if (!is_null($parentProduct)) {
                     $parentProductImageUrl = $this->imageHelper
                         ->init($parentProduct, 'product_page_image_large')->getUrl();
 
-                    $validVariantImage = $this->validateImageUrl($productImageUrl);
-                    if (!$validVariantImage) {
+                    if (!$this->validateImageUrl($productImageUrl)) {
                         $imageLink = $parentProductImageUrl;
                     }
 
@@ -133,7 +117,7 @@ class Feed implements HttpGetActionInterface
                 $price = $product->getPrice();
                 $finalPrice = $product->getFinalPrice();
 
-                // I dont think, UK should be hardcoded as Shipping.
+                // I dont think, UK should be hardcoded as Shipping. The implementation of it is not very pretty.
                 $productFeed .= "
         <item>
             <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
@@ -190,7 +174,6 @@ class Feed implements HttpGetActionInterface
                 }
 
                 $productFeed .= "\n\t\t</item>";
-                $parentProduct = null;
             }
 
             $page++;
@@ -230,6 +213,40 @@ class Feed implements HttpGetActionInterface
             ->setCurPage($page);
 
         return $collection;
+    }
+
+    /**
+     * Provide Parent Product if available
+     *
+     * @param ProductInterface $product
+     *
+     * @return ProductInterface|null
+     */
+    private function provideParentProduct(ProductInterface $product): ?ProductInterface
+    {
+        $parentId = null;
+        if ($this->groupedProductModel->getParentIdsByChild($product->getId())) {
+            $groupedParentId = $this->groupedProductModel->getParentIdsByChild($product->getId());
+            if (isset($groupedParentId[0])) {
+                $parentId = $groupedParentId[0];
+            }
+        }
+        if ($this->configurableProductModel->getParentIdsByChild($product->getId())) {
+            $configurableParentId = $this->configurableProductModel->getParentIdsByChild($product->getId());
+            if (isset($configurableParentId[0])) {
+                $parentId = $configurableParentId[0];
+            }
+        }
+
+        $parentProduct = null;
+        if (isset($parentId)) {
+            try {
+                $parentProduct = $this->productRepositoryFactory->create()->getById($parentId);
+            } catch (\Exception $e) {
+            }
+        }
+
+        return $parentProduct;
     }
 
     /**

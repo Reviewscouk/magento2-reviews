@@ -1,6 +1,12 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+   <!-- The event may not work for Project, when Shipping is not handled in Magento.
+        Consider using event corresponding to marking order as Complete or paid OR Plugin.
+        However, best approach would be to create Cron, running once per eg 5 or 15 mins and process the logic for all the orders that were marked as complete during that interval.
+        Additional column like `sent_to_reviewio` in `sales_order` will be required, to mark already sent orders.
+        Right now, when order would be placed with a lot of products, Timeout may be thrown!
+        Current approach will increase the time of placing order. -->
     <event name="sales_order_shipment_save_after">
         <observer name="reviewscouk_reviews" instance="Reviewscouk\Reviews\Observer\SendOrderDetails"/>
     </event>

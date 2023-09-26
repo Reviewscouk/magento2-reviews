@@ -181,8 +181,8 @@ class API implements HttpGetActionInterface
      */
     private function getProductCollection(): Collection
     {
-        $page = $this->request->getParam('page') ?: '1';
-        $perPage = $this->request->getParam('per_page') ?: 10;
+        $page = $this->request->getParam('page') ?: 0;
+        $perPage = $this->request->getParam('per_page') ?: 100;
 
         $collection = $this->productCollectionFactory->create();
         $collection

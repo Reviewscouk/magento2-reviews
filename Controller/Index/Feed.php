@@ -16,6 +16,7 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable as ConfigurableTypeResourceModel;
 use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\Store\Model\StoreManagerInterface;
@@ -39,6 +40,7 @@ class Feed implements HttpGetActionInterface
      * @param ConfigurableTypeResourceModel     $configurableProductModel
      * @param ProductRepositoryInterfaceFactory $productRepositoryFactory
      * @param CategoryCollectionFactory         $categoryCollectionFactory
+     * @param Http                              $request
      */
     public function __construct(
         private readonly StockRegistryInterface            $stockModel, # StockRegistryInterface is deprecated.
@@ -50,7 +52,8 @@ class Feed implements HttpGetActionInterface
         private readonly Grouped                           $groupedProductModel,
         private readonly ConfigurableTypeResourceModel     $configurableProductModel,
         private readonly ProductRepositoryInterfaceFactory $productRepositoryFactory,
-        private readonly CategoryCollectionFactory         $categoryCollectionFactory
+        private readonly CategoryCollectionFactory         $categoryCollectionFactory,
+        private readonly Http                              $request,
     ) {
     }
 
@@ -82,7 +85,8 @@ class Feed implements HttpGetActionInterface
         <title><![CDATA[" . $store->getName() . "]]></title>
         <link>" . $store->getBaseUrl() . "</link>";
 
-        $page = 0;
+        $page = $this->request->getParam('page') ?: 0;
+        # If You will use Pages and PageSizes, then remove `do / while` block, and use it as in API Controller.
         do {
             $productCollection = $this->getProductCollection($page);
 
@@ -93,6 +97,7 @@ class Feed implements HttpGetActionInterface
                 $imageLink = $productImageUrl;
                 $productUrl = $product->getProductUrl();
 
+                /** @var ProductInterface $parentProduct */
                 $parentProduct = $this->provideParentProduct($product);
                 if ($parentProduct !== null) {
                     $parentProductImageUrl = $this->imageHelper
@@ -198,8 +203,9 @@ class Feed implements HttpGetActionInterface
      */
     private function getProductCollection(int $page): Collection
     {
-        $collection = $this->productCollectionFactory->create();
+        $perPage = $this->request->getParam('per_page') ?: 100;
 
+        $collection = $this->productCollectionFactory->create();
         # If You want to use Collection, do not load all Attributes if not required. Especially with big collection.
         # Add just required attributes.
         $collection
@@ -208,7 +214,7 @@ class Feed implements HttpGetActionInterface
             ->addTaxPercents()
             ->addAttributeToSelect(['name', 'manufacturer', 'gtin', 'brand', 'image', 'upc', 'mpn'])
             ->addUrlRewrite()
-            ->setPageSize(2)
+            ->setPageSize($perPage)
             ->setCurPage($page);
 
         return $collection;

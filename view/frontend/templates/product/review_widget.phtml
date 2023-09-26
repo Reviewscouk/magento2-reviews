@@ -1,15 +1,38 @@
 <?php
-if ($block->isProductWidgetEnabled() && $block->isTabMode()) {
-    if ($block->isIframeWidget()) {
-        $_data = $block->getSettings();
-        $_skus = $block->getProductSkus();
+/**
+ * Add Your COPPYRIGHTS here
+ *
+ * See COPYING.txt for license details.
+ */
+
+/**
+ * @var $block \Reviewscouk\Reviews\Block\Product\Reviewwidget
+ * @var $escaper \Magento\Framework\Escaper
+ */
+if (!isset($escaper)) {
+    $escaper = $block;
+}
+
+# In phtml templates do not use normal `if () {}` statements. Also, reduce the length of ifs and complicity as much as possible.
+# It would be much better to prepare the Child Templates and call them inside IFS, to have separated templates per different Widget
+# Also be consistent in using it. Some templates use `if():` statements, some `if(){}`...
+if (!($block->isProductWidgetEnabled() && $block->isTabMode())):
+    print $block->getStaticWidget();
+else:
+    $_data = $block->getSettings();
+    $_skus = $block->getProductSkus();
+
+    if ($block->isIframeWidget()):
 ?>
+<!-- Why no verified? The Url is basically provided by Block. Cant it return the whole url or at least the part with `https`?
+    Verify every possible output. Even plain text can be verified with $escaper->escapeHtml()-->
         <script src="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/product/dist.js"></script>
         <div id="widget"></div>
+<!--  Seems like this part can be re-usage as well. You can create another phtml temp;late and call it as child in every place it will be required -->
         <script type="text/javascript">
             productWidget("widget", {
-                store: '<?php print $block->escapeHtml($_data['store_id']); ?>',
-                sku: '<?php print $block->escapeHtml(implode(';', $_skus)); ?>', // Multiple SKU"s Seperated by Semi-Colons
+                store: '<?php print $escaper->escapeHtml($_data['store_id']); ?>',
+                sku: '<?php print $escaper->escapeHtml(implode(';', $_skus)); ?>', // Multiple SKU"s Seperated by Semi-Colons
                 primaryClr: "<?php /* @noEscape */ print $_data['colour']; ?>",
                 neutralClr: "#EBEBEB",
                 buttonClr: "#EEE",
@@ -31,21 +54,19 @@ if ($block->isProductWidgetEnabled() && $block->isTabMode()) {
                 translateDetails: '<?php /* @escapeNotVerified */ print __("Details"); ?>'
             });
         </script>
-    <?php
-    } elseif ($block->isPolarisWidget()) {
 
-        $_data = $block->getSettings();
-        $_skus = $block->getProductSkus();
-
-    ?>
+    <?php elseif ($block->isPolarisWidget()): ?>
         <div id='ReviewsWidget'></div>
 
         <script src="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/polaris/build.js"></script>
 
+<!--  Seems like this part of code is reusable. In my opinion it makes more sense to put it somewhere else and reuse as JS.
+        Eventually You can create this as part of phtml and call it as child template
+        BTW Especially the Styles should not be defined here like that. Its not pretty :) -->
         <script>
             new ReviewsWidget(('#ReviewsWidget'), {
                 //Your REVIEWS.io account ID and widget type:
-                store: '<?php print $block->escapeHtml($_data['store_id']); ?>',
+                store: '<?php print $escaper->escapeHtml($_data['store_id']); ?>',
                 widget: 'polaris',
 
                 //Content settings (store_review,product_review,questions). Choose what to display in this widget:
@@ -59,7 +80,7 @@ if ($block->isProductWidgetEnabled() && $block->isTabMode()) {
                     //Product specific settings. Provide product SKU for which reviews should be displayed:
                     product_review: {
                         //Display product reviews - include multiple product SKUs seperated by Semi-Colons (Main Indentifer in your product catalog )
-                        sku: '<?php print $block->escapeHtml(implode(';', $_skus)); ?>',
+                        sku: '<?php print $escaper->escapeHtml(implode(';', $_skus)); ?>',
                         hide_if_no_results: false,
                         enable_rich_snippets: false,
                     },
@@ -69,7 +90,7 @@ if ($block->isProductWidgetEnabled() && $block->isTabMode()) {
                         enable_ask_question: true,
                         show_dates: true,
                         //Display group questions by providing a grouping variable, new questions will be assigned to this group.
-                        grouping: '<?php print $block->escapeHtml(implode(';', $_skus)); ?>',
+                        grouping: '<?php print $escaper->escapeHtml(implode(';', $_skus)); ?>',
                     },
 
                     //Header settings:
@@ -228,13 +249,5 @@ if ($block->isProductWidgetEnabled() && $block->isTabMode()) {
                 },
             });
         </script>
-
-
-<?php
-
-    } else {
-
-        print $block->getStaticWidget();
-    }
-}
-?>
+    <?php endif; ?>
+<?php endif; ?>

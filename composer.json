@@ -8,6 +8,12 @@
       "registration.php"
     ]
   },
+    "require": {
+        "magento/module-sales": "^102.0.0 || ^103.0.0",
+        "magento/module-catalog": "^102.0.0 || ^103.0.0",
+        "magento/framework": "^102.0.0 || ^103.0.0",
+        "php": "~8.1"
+    },
   "description": "Reviews.co.uk Magento 2 Integration",
   "type": "magento2-module",
   "authors": [

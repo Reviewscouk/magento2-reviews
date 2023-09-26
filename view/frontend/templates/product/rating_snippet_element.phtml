@@ -1,8 +1,10 @@
 <?php
-if ($block->isProductRatingSnippetWidgetEnabled()) {
+# add copyright block.
+# Add definition of Block.
+# Use escaper instead of $block for escaping
+if ($block->isProductRatingSnippetWidgetEnabled()):
     $_data = $block->getSettings();
     $_skus = $block->getProductSkus();
 ?>
     <div class="ruk_rating_snippet" data-sku="<?php print $block->escapeHtml((!empty($_skus) ? implode(';', $_skus) : '')) ?>"></div>
-<?php
-}
+<?php endif; # never ending php?? ?>

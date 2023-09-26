@@ -1,226 +1,272 @@
 <?php
+/**
+ * Add Your COPPYRIGHTS here
+ *
+ * See COPYING.txt for license details.
+ */
 
 namespace Reviewscouk\Reviews\Controller\Index;
 
-use Magento\Framework as Framework;
-use Magento\Catalog as Catalog;
-use Magento\CatalogInventory as CatalogInventory;
-use Magento\Store as Store;
-use Reviewscouk\Reviews as Reviews;
-use Magento\Framework\App\Action\HttpGetActionInterface as HttpGetActionInterface;
-use Magento\Framework\App\Action\HttpPostActionInterface as HttpPostActionInterface;
-use Magento\Framework\Cache\Core;
-use Magento\Catalog\Model\Product;
-use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Api\ProductRepositoryInterfaceFactory;
 use Magento\Catalog\Helper\Image;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
+use Magento\Catalog\Model\ResourceModel\Product\Collection;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable as ConfigurableTypeResourceModel;
+use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\Request\Http;
+use Magento\Framework\Controller\ResultFactory;
+use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\Store\Model\StoreManagerInterface;
 use Reviewscouk\Reviews\Helper\Config;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Magento\Framework\HTTP\Client\Curl;
-use Magento\Framework\Controller\ResultFactory;
 
+/**
+ * Feed Controller - prepare list of products and format it to xml format
+ */
 class Feed implements HttpGetActionInterface
 {
-    protected $configHelper;
-    protected $cache;
-    protected $productModel;
-    protected $stockModel;
-    protected $imageHelper;
-    protected $storeModel;
-    protected $productCollectionFactory;
-    protected $configurableType;
-    protected $curl;
-    protected $resultFactory;
-
+    /**
+     * Constructor for Feed
+     *
+     * @param StockRegistryInterface            $stockModel
+     * @param Image                             $imageHelper
+     * @param StoreManagerInterface             $storeModel
+     * @param Config                            $configHelper
+     * @param CollectionFactory                 $productCollectionFactory
+     * @param ResultFactory                     $resultFactory
+     * @param Grouped                           $groupedProductModel
+     * @param ConfigurableTypeResourceModel     $configurableProductModel
+     * @param ProductRepositoryInterfaceFactory $productRepositoryFactory
+     * @param CategoryCollectionFactory         $categoryCollectionFactory
+     * @param Http                              $request
+     */
     public function __construct(
-        //Framework\App\Action\Context $context,
-        Core $core,
-        Product $product,
-        StockRegistryInterface $stockRegistryInterface,
-        Image $image,
-        StoreManagerInterface $storeManagerInterface,
-        Config $config,
-        CollectionFactory $productCollectionFactory,
-        Configurable $configurableType,
-        Curl $curl,
-        ResultFactory $resultFactory
+        private readonly StockRegistryInterface            $stockModel, # StockRegistryInterface is deprecated.
+        private readonly Image                             $imageHelper,
+        private readonly StoreManagerInterface             $storeModel,
+        private readonly Config                            $configHelper,
+        private readonly CollectionFactory                 $productCollectionFactory,
+        private readonly ResultFactory                     $resultFactory,
+        private readonly Grouped                           $groupedProductModel,
+        private readonly ConfigurableTypeResourceModel     $configurableProductModel,
+        private readonly ProductRepositoryInterfaceFactory $productRepositoryFactory,
+        private readonly CategoryCollectionFactory         $categoryCollectionFactory,
+        private readonly Http                              $request,
     ) {
-        // parent::__construct($context);
-
-        $this->configHelper = $config;
-        $this->cache = $core;
-        $this->productModel = $product;
-        $this->stockModel = $stockRegistryInterface;
-        $this->imageHelper = $image;
-        $this->storeModel = $storeManagerInterface;
-        $this->productCollectionFactory = $productCollectionFactory;
-        $this->configurableType = $configurableType;
-        $this->curl = $curl;
-        $this->resultFactory = $resultFactory;
     }
 
-    private function getProductCollection()
-    {
-        $collection = $this->productCollectionFactory->create();
-        /* Addtional */
-        $collection
-            ->addMinimalPrice()
-            ->addFinalPrice()
-            ->addTaxPercents()
-            ->addAttributeToSelect('*')
-            ->addUrlRewrite();
-        return $collection;
-    }
-
-    private function validateImageUrl($imageUrl)
-    {
-        $options = [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => true,
-            CURLOPT_NOBODY => true,
-        ];
-
-        if (strpos($imageUrl, "Magento_Catalog/images/product/placeholder/image.jpg") !== false) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private function validateVariantUrl($url)
-    {
-        $options = [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => true,
-            CURLOPT_NOBODY => true,
-        ];
-
-        try {
-            $this->curl->get($url);
-            $this->curl->setOptions($options);
-
-            if ($this->curl->getStatus() == 200) {
-                return true;
-            }
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-
+    /**
+     * @inheritDoc
+     */
     public function execute()
     {
+        $store = $this->storeModel->getStore();
+
+        if (!$this->configHelper->isProductFeedEnabled($store->getId())) {
+            $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+            $result->setContents("Product Feed is disabled");
+
+            return $result;
+        }
+
         // Set timelimit to 0 to avoid timeouts when generating feed.
         ob_start();
         set_time_limit(0);
+        # Basically not good solution. Even with that, timeout can be thrown with many products.
+        # Consider using pagination as for API Controller and remove the ob_start and set_time_limit
+        # Eventually create cron, that would create the Feed in the background and the controller would only display it
 
-        $store = $this->storeModel->getStore();
+        // TODO:- Implement caching of Feed
+        $productFeed = "<?xml version='1.0'?>
+<rss version ='2.0' xmlns:g='http://base.google.com/ns/1.0'>
+    <channel>
+        <title><![CDATA[" . $store->getName() . "]]></title>
+        <link>" . $store->getBaseUrl() . "</link>";
 
-        $productFeedEnabled = $this->configHelper->isProductFeedEnabled($store->getId());
-        if ($productFeedEnabled) {
-            // TODO:- Implement caching of Feed
-            $productFeed = "<?xml version='1.0'?>
-                    <rss version ='2.0' xmlns:g='http://base.google.com/ns/1.0'>
-                    <channel>
-                    <title><![CDATA[" . $store->getName() . "]]></title>
-                    <link>" . $store->getBaseUrl() . "</link>";
+        $page = $this->request->getParam('page') ?: 0;
+        # If You will use Pages and PageSizes, then remove `do / while` block, and use it as in API Controller.
+        do {
+            $productCollection = $this->getProductCollection($page);
 
-            $products = $this->getProductCollection();
-
-            foreach ($products as $product) {
-                $parentProductId = null;
-                $groupedParentId = null;
-                $configurableParentId = null;
-                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-
-                if ($objectManager->create('Magento\GroupedProduct\Model\Product\Type\Grouped')->getParentIdsByChild($product->getId())) {
-                    $groupedParentId = $objectManager->create('Magento\GroupedProduct\Model\Product\Type\Grouped')->getParentIdsByChild($product->getId());
-                }
-                if ($objectManager->create('Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable')->getParentIdsByChild($product->getId())) {
-                    $configurableParentId = $objectManager->create('Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable')->getParentIdsByChild($product->getId());
-                }
-
-                $parentId = null;
-                $parentProduct = null;
-
-                if (isset($groupedParentId[0])) {
-                    $parentId = $groupedParentId[0];
-                } else if (isset($configurableParentId[0])) {
-                    $parentId = $configurableParentId[0];
-                }
-
+            /** @var ProductInterface $product */
+            foreach ($productCollection as $product) {
                 // Load image url via helper.
                 $productImageUrl = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
                 $imageLink = $productImageUrl;
                 $productUrl = $product->getProductUrl();
 
-                if (isset($parentId)) {
-                    $parentProduct = $objectManager->create('Magento\Catalog\Model\Product')->load($parentId);
+                /** @var ProductInterface $parentProduct */
+                $parentProduct = $this->provideParentProduct($product);
+                if ($parentProduct !== null) {
+                    $parentProductImageUrl = $this->imageHelper
+                        ->init($parentProduct, 'product_page_image_large')->getUrl();
 
-                    $parentProductImageUrl = $this->imageHelper->init($parentProduct, 'product_page_image_large')->getUrl();
-                    $validVariantImage = $this->validateImageUrl($productImageUrl);
-                    if (!$validVariantImage) {
+                    if (!$this->validateImageUrl($productImageUrl)) {
                         $imageLink = $parentProductImageUrl;
                     }
 
                     $productUrl = $parentProduct->getProductUrl();
                 }
 
-                $brand = $product->hasData('manufacturer') ? $product->getAttributeText('manufacturer') : ($product->hasData('brand') ? $product->getAttributeText('brand') : 'Not Available');
+                if ($product->hasData('brand')) {
+                    $brand = $product->hasData('manufacturer') ? $product->getAttributeText('manufacturer')
+                        : ($product->getAttributeText('brand'));
+                } else {
+                    $brand = $product->hasData('manufacturer') ? $product->getAttributeText('manufacturer')
+                        : ('Not Available');
+                }
+
                 $price = $product->getPrice();
                 $finalPrice = $product->getFinalPrice();
 
-                $productFeed .= "<item>
-                        <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
-                        <title><![CDATA[" . $product->getName() . "]]></title>
-                        <link><![CDATA[" . $productUrl . "]]></link>
-                        <g:price>" . (!empty($price) ? number_format($price, 2) . " " . $store->getCurrentCurrency()->getCode() : '') . "</g:price>
-                        <g:sale_price>" . (!empty($finalPrice) ? number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() : '') . "</g:sale_price>
-                        <description><![CDATA[]]></description>
-                        <g:condition>new</g:condition>
-                        <g:image_link><![CDATA[" . $imageLink . "]]></g:image_link>
-                        <g:brand><![CDATA[" . $brand . "]]></g:brand>
-                        <g:mpn><![CDATA[" . ($product->hasData('mpn') ? $product->getData('mpn') : $product->getSku()) . "]]></g:mpn>
-                        <g:gtin><![CDATA[" . ($product->hasData('gtin') ? $product->getData('gtin') : ($product->hasData('upc') ? $product->getData('upc') : '')) . "]]></g:gtin>
-                        <g:product_type><![CDATA[" . $product->getTypeID() . "]]></g:product_type>
-                        <g:shipping>
-                        <g:country>UK</g:country>
-                        <g:service>Standard Free Shipping</g:service>
-                        <g:price>0 GBP</g:price>
-                        </g:shipping>";
+                # I dont think, UK should be hardcoded as Shipping. The implementation of it is not very pretty.
+                $productFeed .= "
+        <item>
+            <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
+            <title><![CDATA[" . $product->getName() . "]]></title>
+            <link><![CDATA[" . $productUrl . "]]></link>
+            <g:price>" . (!empty($price) ? number_format($price, 2) . " " . $store->getCurrentCurrency()->getCode() : '') . "</g:price>
+            <g:sale_price>" . (!empty($finalPrice) ? number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() : '') . "</g:sale_price>
+            <description><![CDATA[]]></description>
+            <g:condition>new</g:condition>
+            <g:image_link><![CDATA[" . $imageLink . "]]></g:image_link>
+            <g:brand><![CDATA[" . $brand . "]]></g:brand>
+            <g:mpn><![CDATA[" . ($product->hasData('mpn') ?: $product->getSku()) . "]]></g:mpn>
+            <g:gtin><![CDATA[" . ($product->hasData('gtin') ?: ($product->hasData('upc') ?: '')) . "]]></g:gtin>
+            <g:product_type><![CDATA[" . $product->getTypeID() . "]]></g:product_type>
+            <g:shipping>
+            <g:country>UK</g:country>
+            <g:service>Standard Free Shipping</g:service>
+            <g:price>0 GBP</g:price>
+            </g:shipping>";
 
-                $categoryCollection = $product->getCategoryCollection();
-                if (count($categoryCollection) > 0) {
+                # If You really need to provide also Category names, the Category collection have to be loaded as well.
+                # It is not very optimized for many products.
+                $categoryIds = $product->getCategoryIds();
+                try {
+                    $categoryCollection = $this->categoryCollectionFactory->create()
+                        ->addAttributeToSelect(['name'])
+                        ->addAttributeToFilter('entity_id', $categoryIds);
+                } catch (\Exception $e) {
+                    $categoryCollection = null;
+                }
+
+                if ($categoryCollection !== null && count($categoryCollection) > 0) {
                     foreach ($categoryCollection as $category) {
-                        $productFeed .= "<g:google_product_category><![CDATA[" . $category->getName() . "]]></g:google_product_category>";
+                        $productFeed .= sprintf(
+                            "\n\t\t\t<g:google_product_category><![CDATA[%s]]></g:google_product_category>",
+                            $category->getName()
+                        );
                     }
                 }
 
+                # The StockRegistryInterface is deprecated. Implemented logic will not reflect real Stock Status.
+                # See https://developer.adobe.com/commerce/php/development/components/web-api/inventory-management/
+                # For quicker resolve, consider using $product->isSalable() instead $stock->getIsInStock()
+                # Otherwise if Shop uses MSI load StockInventories and check availability there
                 $stock = $this->stockModel->getStockItem(
                     $product->getId(),
                     $product->getStore()->getWebsiteId()
                 );
                 if ($stock->getIsInStock()) {
-                    $productFeed .= "<g:availability>in stock</g:availability>";
+                    #if ($product->isSalable()) {
+                    $productFeed .= "\n\t\t\t<g:availability>in stock</g:availability>";
                 } else {
-                    $productFeed .= "<g:availability>out of stock</g:availability>";
+                    $productFeed .= "\n\t\t\t<g:availability>out of stock</g:availability>";
                 }
 
-                $productFeed .= "</item>";
-                $parentProduct = null;
+                $productFeed .= "\n\t\t</item>";
             }
 
-            $productFeed .= "</channel></rss>";
+            $page++;
+        } while ($productCollection->count());
 
-            // TODO:- Implement caching of feed
+        $productFeed .= "\n\t</channel>\n</rss>";
 
-            $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
-            $result->setContents($productFeed);
+        // TODO:- Implement caching of feed
+        $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+        $result->setContents($productFeed);
 
-            return $result;
-            // exit();
-        } else {
-            print "Product Feed is disabled.";
+        ob_end_clean(); #Should occur when using ob_start
+
+        return $result;
+    }
+
+    /**
+     * Provide page of product collection
+     *
+     * @param int $page
+     *
+     * @return Collection
+     */
+    private function getProductCollection(int $page): Collection
+    {
+        $perPage = $this->request->getParam('per_page') ?: 100;
+
+        $collection = $this->productCollectionFactory->create();
+        # If You want to use Collection, do not load all Attributes if not required. Especially with big collection.
+        # Add just required attributes.
+        $collection
+            ->addMinimalPrice()
+            ->addFinalPrice()
+            ->addTaxPercents()
+            ->addAttributeToSelect(['name', 'manufacturer', 'gtin', 'brand', 'image', 'upc', 'mpn'])
+            ->addUrlRewrite()
+            ->setPageSize($perPage)
+            ->setCurPage($page);
+
+        return $collection;
+    }
+
+    /**
+     * Provide Parent Product if available
+     *
+     * @param ProductInterface $product
+     *
+     * @return ProductInterface|null
+     */
+    private function provideParentProduct(ProductInterface $product): ?ProductInterface
+    {
+        $parentId = null;
+        if ($this->groupedProductModel->getParentIdsByChild($product->getId())) {
+            $groupedParentId = $this->groupedProductModel->getParentIdsByChild($product->getId());
+            if (isset($groupedParentId[0])) {
+                $parentId = $groupedParentId[0];
+            }
         }
+        if ($this->configurableProductModel->getParentIdsByChild($product->getId())) {
+            $configurableParentId = $this->configurableProductModel->getParentIdsByChild($product->getId());
+            if (isset($configurableParentId[0])) {
+                $parentId = $configurableParentId[0];
+            }
+        }
+
+        $parentProduct = null;
+        if (isset($parentId)) {
+            try {
+                $parentProduct = $this->productRepositoryFactory->create()->getById($parentId);
+            } catch (\Exception $e) {
+            }
+        }
+
+        return $parentProduct;
+    }
+
+    /**
+     * Validate Image Url
+     *
+     * @param string $imageUrl
+     *
+     * @return bool
+     */
+    private function validateImageUrl(string $imageUrl): bool
+    {
+        if (str_contains($imageUrl, "Magento_Catalog/images/product/placeholder/image.jpg")) {
+            return false;
+        }
+
+        return true;
     }
 }

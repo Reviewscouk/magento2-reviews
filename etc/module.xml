@@ -4,6 +4,8 @@
     <module name="Reviewscouk_Reviews" setup_version="0.0.7b">
         <sequence>
             <module name="Magento_Catalog" /> <!-- Make sure to include the module you want to extend -->
+            <module name="Magento_Sales" />
+            <module name="Magento_Store" />
         </sequence>
     </module>
 </config>

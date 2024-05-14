@@ -78,6 +78,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                     'email'        => $order->getCustomerEmail(),
                     'order_id'     => $order->getRealOrderId(),
                     'country_code' => $order->getShippingAddress()->getCountryId(),
+                    'phone'        => $order->getBillingAddress()->getTelephone(),
                     'products'     => $p
                 ], $magento_store_id);
 

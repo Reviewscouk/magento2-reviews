@@ -5,10 +5,12 @@ namespace Reviewscouk\Reviews\Block;
 use Magento\Backend as Backend;
 use Magento\Directory as Directory;
 use Magento\Framework as Framework;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
 use Reviewscouk\Reviews as Reviews;
 
 class Richsnippet extends Framework\View\Element\Template
 {
+    private $secureHtmlRenderer;
     private $dataHelper;
     private $configHelper;
     private $registry;
@@ -22,7 +24,7 @@ class Richsnippet extends Framework\View\Element\Template
         Framework\View\Element\Template\Context $context,
         Framework\Registry $registry,
         Backend\Block\Template\Context $backend,
-
+        SecureHtmlRenderer $secureHtmlRenderer,
         Directory\Model\Currency $currency,
 
         array $data = []
@@ -33,7 +35,7 @@ class Richsnippet extends Framework\View\Element\Template
         $this->dataHelper   = $dataHelper;
         $this->registry     = $registry;
         $this->currency     = $currency;
-
+        $this->secureHtmlRenderer = $secureHtmlRenderer;
         $this->store = $this->_storeManager->getStore();
     }
 
@@ -72,43 +74,46 @@ class Richsnippet extends Framework\View\Element\Template
         return '';
     }
 
+    public function getRichSnippetSource()
+    {
+        $region = $this->configHelper->getRegion($this->store->getId());
+        $url = $region == 'us' ? 'https://widget.reviews.io/rich-snippet/dist.js' : 'https://widget.reviews.co.uk/rich-snippet/dist.js';
+
+        return '<script src="' . $url . '"></script>';
+    }
+
     public function getRichSnippet($sku = null, $product = null)
     {
         if (isset($sku) && is_array($sku)) {
             $sku = implode(';', $sku);
         }
 
-        $region    = $this->configHelper->getRegion($this->store->getId());
         $storeName = $this->configHelper->getStoreId($this->store->getId());
-        $url       = $region == 'us' ? 'https://widget.reviews.io/rich-snippet/dist.js' : 'https://widget.reviews.co.uk/rich-snippet/dist.js';
-
-        $output = '<script src="' . $url . '"></script>';
-        $output .= '<script>
-        richSnippet({
-
-            store: "' . $storeName . '",
-            sku:"' . $sku . '",
-            data:{
-              "url": "' . (isset($product['url']) ? $this->escapeHtml($product['url']) : null) . '",
-              "description": `' . (isset($product['description']) ? $product['description'] : null) . '`,
-              "mpn": "' . (isset($product['mpn']) ? $this->escapeHtml($product['mpn']) : null) . '",
-              "offers" :[{
-                "@type":"Offer",
-                "availability": "' . (isset($product['availability']) ? $product['availability'] : null) . '",
-                "price": "' . (isset($product['price']) ? $product['price'] : null) . '",
-                "priceCurrency": "' . (isset($product['priceCurrency']) ? $product['priceCurrency'] : null) . '",
+        $script = '
+            richSnippet({
+                store: "' . $storeName . '",
+                sku:"' . $sku . '",
+                data:{
                 "url": "' . (isset($product['url']) ? $this->escapeHtml($product['url']) : null) . '",
-                "priceValidUntil": "' . date("Y-m-d", strtotime("+1 months")) . '",
-              }],
-              "brand": {
-               "@type": "Brand",
-               "name": "' . (isset($product['brand']) ? $this->escapeHtml($product['brand']) : null) . '",
-             }
-            }
+                "description": `' . (isset($product['description']) ? $product['description'] : null) . '`,
+                "mpn": "' . (isset($product['mpn']) ? $this->escapeHtml($product['mpn']) : null) . '",
+                "offers" :[{
+                    "@type":"Offer",
+                    "availability": "' . (isset($product['availability']) ? $product['availability'] : null) . '",
+                    "price": "' . (isset($product['price']) ? $product['price'] : null) . '",
+                    "priceCurrency": "' . (isset($product['priceCurrency']) ? $product['priceCurrency'] : null) . '",
+                    "url": "' . (isset($product['url']) ? $this->escapeHtml($product['url']) : null) . '",
+                    "priceValidUntil": "' . date("Y-m-d", strtotime("+1 months")) . '",
+                }],
+                "brand": {
+                "@type": "Brand",
+                "name": "' . (isset($product['brand']) ? $this->escapeHtml($product['brand']) : null) . '",
+                }
+                }
+            });
+        ';
 
-        })</script>';
-
-        return $output;
+        return $this->secureHtmlRenderer->renderTag('script', [], $script, false);
     }
 
     /**

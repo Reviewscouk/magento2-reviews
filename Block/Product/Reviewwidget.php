@@ -12,7 +12,6 @@ class Reviewwidget extends Framework\View\Element\Template
      * @var SecureHtmlRenderer
      */
     private $secureHtmlRenderer;
-    private $nonce;
     private $configHelper;
     private $dataHelper;
     private $registry;

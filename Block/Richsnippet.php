@@ -5,6 +5,7 @@ namespace Reviewscouk\Reviews\Block;
 use Magento\Backend as Backend;
 use Magento\Directory as Directory;
 use Magento\Framework as Framework;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\View\Helper\SecureHtmlRenderer;
 use Reviewscouk\Reviews as Reviews;
 
@@ -24,7 +25,6 @@ class Richsnippet extends Framework\View\Element\Template
         Framework\View\Element\Template\Context $context,
         Framework\Registry $registry,
         Backend\Block\Template\Context $backend,
-        SecureHtmlRenderer $secureHtmlRenderer,
         Directory\Model\Currency $currency,
 
         array $data = []
@@ -34,9 +34,12 @@ class Richsnippet extends Framework\View\Element\Template
         $this->configHelper = $config;
         $this->dataHelper   = $dataHelper;
         $this->registry     = $registry;
-        $this->currency     = $currency;
-        $this->secureHtmlRenderer = $secureHtmlRenderer;
+        $this->currency = $currency;
         $this->store = $this->_storeManager->getStore();
+
+        if (class_exists('Magento\Framework\View\Helper\SecureHtmlRenderer')) {
+            $this->secureHtmlRenderer = ObjectManager::getInstance()->get('Magento\Framework\View\Helper\SecureHtmlRenderer');
+        }
     }
 
     public function autoRichSnippet()
@@ -113,7 +116,7 @@ class Richsnippet extends Framework\View\Element\Template
             });
         ';
 
-        return $this->secureHtmlRenderer->renderTag('script', [], $script, false);
+        return $this->getSecureHtmlRenderer()->renderTag('script', [], $script, false);
     }
 
     /**
@@ -129,5 +132,19 @@ class Richsnippet extends Framework\View\Element\Template
         }
 
         return 'http://schema.org/InStock';
+    }
+
+    public function getSecureHtmlRenderer()
+    {
+        if (!$this->secureHtmlRenderer) {
+            return new class {
+                public function renderTag($type, $attributes, $content, $isText)
+                {
+                    return '<script> ' . $content . '</script>';
+                }
+            };
+        }
+
+        return $this->secureHtmlRenderer;
     }
 }

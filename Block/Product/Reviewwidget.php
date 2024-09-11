@@ -2,12 +2,13 @@
 
 namespace Reviewscouk\Reviews\Block\Product;
 
+use Magento\Framework\App\ObjectManager;
 use Reviewscouk\Reviews as Reviews;
 use Magento\Framework as Framework;
 
 class Reviewwidget extends Framework\View\Element\Template
 {
-
+    private $secureHtmlRenderer;
     private $configHelper;
     private $dataHelper;
     private $registry;
@@ -26,8 +27,11 @@ class Reviewwidget extends Framework\View\Element\Template
         $this->configHelper = $config;
         $this->dataHelper = $dataHelper;
         $this->registry = $registry;
-
         $this->store = $this->_storeManager->getStore();
+
+        if (class_exists('Magento\Framework\View\Helper\SecureHtmlRenderer')) {
+            $this->secureHtmlRenderer = ObjectManager::getInstance()->get('Magento\Framework\View\Helper\SecureHtmlRenderer');
+        }
     }
 
     public function isProductWidgetEnabled()
@@ -144,5 +148,19 @@ class Reviewwidget extends Framework\View\Element\Template
             $api_url = 'widget.reviews.io';
         }
         return $api_url;
+    }
+
+    public function getSecureHtmlRenderer()
+    {
+        if (!$this->secureHtmlRenderer) {
+            return new class {
+                public function renderTag($type, $attributes, $content, $isText)
+                {
+                    return '<script> ' . $content . '</script>';
+                }
+            };
+        }
+
+        return $this->secureHtmlRenderer;
     }
 }

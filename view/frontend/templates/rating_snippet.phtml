@@ -2,14 +2,11 @@
 <?php
 if ($block->isProductRatingSnippetWidgetEnabled() || $block->isCategoryRatingSnippetWidgetEnabled()) {
     $_data = $block->getSettings();
-?>
-    <script src="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/rating-snippet/dist.js"></script>
-    <link rel="stylesheet" href="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/rating-snippet/dist.css" />
-    <script>
+    $snippet = '
         ratingSnippet("ruk_rating_snippet", {
-            store: "<?php print $block->escapeHtml($_data['store_id']); ?>",
+            store: "' . $block->escapeHtml($_data['store_id']) . '",
             mode: "default",
-            color: "<?php /* @noEscape */ print $_data["colour"]; ?>",
+            color: "' . $_data["colour"] . '",
             linebreak: false,
             text: "Reviews",
             singularText: "Review",
@@ -17,6 +14,11 @@ if ($block->isProductRatingSnippetWidgetEnabled() || $block->isCategoryRatingSni
             usePolaris: true,
             showEmptyStars: false,
         });
-    </script>
+    ';
+    $snippet = $block->getSecureHtmlRenderer()->renderTag('script', [], $snippet, false);
+?>
+    <script src="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/rating-snippet/dist.js"></script>
+    <link rel="stylesheet" href="https://<?php /* @escapeNotVerified */ print $_data['api_url']; ?>/rating-snippet/dist.css" />
+    <?= $snippet ?>
 <?php
 }

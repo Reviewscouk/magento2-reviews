@@ -83,7 +83,7 @@
             <label>On Page Content</label>
             <tab>reviewscouk</tab>
             <resource>Reviewscouk_Reviews::onpage</resource>
-            
+
 
             <group id="widget" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
                    showInStore="1">
@@ -120,7 +120,7 @@
                         Please disable this setting if you experience an issue or conflict with
                         other category or search plugins.</comment>
                 </field>
-                
+
 
                 <field id="product_widget_colour" translate="label" type="text" sortOrder="15" showInDefault="1"
                        showInWebsite="1" showInStore="1">
@@ -132,6 +132,12 @@
                     <label>Product Review Widget Type</label>
                     <source_model>Reviewscouk\Reviews\Model\Config\Source\Widgetversion</source_model>
                 </field>
+
+                <field id="include_ai_summary" translate="label" type="select" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Include AI Summary in Product Reviews Widget</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
                 <field id="tab_mode_enabled" translate="label" type="select" sortOrder="100" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Show Product Review Widget in Description Tabs?</label>

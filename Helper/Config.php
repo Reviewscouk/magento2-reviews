@@ -16,6 +16,7 @@ class Config extends Framework\App\Helper\AbstractHelper
     const XML_CONFIG_CATEGORY_RATING_SNIPPET_WIDGET_ENABLED = 'reviewscouk_reviews_onpage/widget/category_rating_snippet_widget_enabled';
     const XML_CONFIG_PRODUCT_WIDGET_VERSION = 'reviewscouk_reviews_onpage/widget/product_widget_version';
     const XML_CONFIG_USE_TAB_MODE = "reviewscouk_reviews_onpage/widget/tab_mode_enabled";
+    const XML_CONFIG_INCLUDE_AI_SUMMARY = "reviewscouk_reviews_onpage/widget/include_ai_summary";
 
     const XML_CONFIG_PRODUCT_WIDGET_COLOUR = 'reviewscouk_reviews_onpage/widget/product_widget_colour';
     const XML_CONFIG_QUESTION_WIDGET_ENABLED = 'reviewscouk_reviews_onpage/widget/question_widget_enabled';
@@ -113,6 +114,11 @@ class Config extends Framework\App\Helper\AbstractHelper
     public function isProductFeedEnabled($magentoStore)
     {
         return $this->getValue(self::XML_CONFIG_PRODUCT_FEED_ENABLED, $magentoStore);
+    }
+
+    public function isAISummaryEnabled($magentoStore)
+    {
+        return $this->getValue(self::XML_CONFIG_INCLUDE_AI_SUMMARY, $magentoStore);
     }
 
     /**

@@ -80,6 +80,11 @@ class Reviewwidget extends Framework\View\Element\Template
         return ($questionWidgetVersion == '2' ? true : false);
     }
 
+    public function isAISummaryEnabled()
+    {
+        return $this->configHelper->isAISummaryEnabled($this->store->getId());
+    }
+
     public function getStaticWidget()
     {
         $store_id = $this->configHelper->getStoreId($this->store->getId());

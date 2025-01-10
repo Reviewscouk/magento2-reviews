@@ -172,6 +172,7 @@ class Feed implements HttpGetActionInterface
 
                 $productFeed .= "<item>
                         <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
+                        <magento_product_id><![CDATA[" . $product->getId() . "]]></magento_product_id>
                         <title><![CDATA[" . $product->getName() . "]]></title>
                         <link><![CDATA[" . $productUrl . "]]></link>
                         <g:price>" . (!empty($price) ? number_format($price, 2) . " " . $store->getCurrentCurrency()->getCode() : '') . "</g:price>

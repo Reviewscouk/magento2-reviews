@@ -39,10 +39,10 @@ class RatingSnippet extends ListProduct
         \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         array $data = [],
-        \Magento\Customer\Model\Session $customerSession = null,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory = null,
-        ReviewsConfig $reviewsConfigHelper = null,
-        StoreManagerInterface $storeManager = null
+        ?\Magento\Customer\Model\Session $customerSession = null,
+        ?\Magento\Catalog\Model\CategoryFactory $categoryFactory = null,
+        ?ReviewsConfig $reviewsConfigHelper = null,
+        ?StoreManagerInterface $storeManager = null
     ) {
         $this->_customerSession = $customerSession;
         $this->categoryFactory = $categoryFactory;

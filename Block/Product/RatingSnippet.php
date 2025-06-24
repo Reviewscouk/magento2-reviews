@@ -14,12 +14,19 @@ use \Reviewscouk\Reviews\Helper\Config as ReviewsConfig;
 
 class RatingSnippet extends ListProduct
 {
-    protected $_customerSession;
-    protected $categoryFactory;
-    //protected $reviewsConfig = Reviews\Helper\Config;
     // protected $_storeManager = StoreManagerInterface::class;
-    protected $store;
+    protected $_customerSession;
     protected $reviewsConfig;
+    protected $postDataHelper;
+    protected $layerResolver;
+    protected $categoryRepository;
+    protected $urlHelper;
+    protected $customerSession;
+    protected $categoryFactory;
+    protected $reviewsConfigHelper;
+    protected $storeManager;
+    protected $store;
+
     /**
      * ListProduct constructor.
      * @param \Magento\Catalog\Block\Product\Context $context

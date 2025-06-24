@@ -34,10 +34,11 @@ class RatingSnippet extends ListProduct
      * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
      * @param \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository
      * @param \Magento\Framework\Url\Helper\Data $urlHelper
-     * @param Helper $helper
      * @param array $data
      * @param \Magento\Customer\Model\Session $customerSession
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param \Reviewscouk\Reviews\Helper\Config $reviewsConfigHelper
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      */
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,

@@ -25,7 +25,7 @@ class Api extends Framework\Model\AbstractModel
         $this->store = $storeManagerInterface->getStore();
     }
 
-    public function apiPost($url, $data, ?$magento_store_id = null)
+    public function apiPost($url, $data, ?string $magento_store_id = null)
     {
         if ($magento_store_id == null) {
             $magento_store_id = $this->store->getId();
@@ -51,7 +51,7 @@ class Api extends Framework\Model\AbstractModel
         return $response;
     }
 
-    protected function getApiDomain(?$magento_store_id = null)
+    protected function getApiDomain(?string $magento_store_id = null)
     {
         return $this->configHelper->getRegion($magento_store_id) == 'US' ? 'api.reviews.io' : 'api.reviews.co.uk';
     }

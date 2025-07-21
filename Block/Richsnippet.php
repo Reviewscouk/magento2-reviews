@@ -95,6 +95,7 @@ class Richsnippet extends Framework\View\Element\Template
         $script = '
             richSnippet({
                 store: "' . $storeName . '",
+                mergeMicroData: true,
                 sku:"' . $sku . '",
                 data:{
                 "url": "' . (isset($product['url']) ? $this->escapeHtml($product['url']) : null) . '",

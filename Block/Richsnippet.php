@@ -85,7 +85,7 @@ class Richsnippet extends Framework\View\Element\Template
         return '<script src="' . $url . '"></script>';
     }
 
-    public function getRichSnippet($sku = null, $product = null)
+    public function getRichSnippet(?array $sku = null, ?array $product = null)
     {
         if (isset($sku) && is_array($sku)) {
             $sku = implode(';', $sku);

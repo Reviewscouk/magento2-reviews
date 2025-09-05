@@ -14,12 +14,19 @@ use \Reviewscouk\Reviews\Helper\Config as ReviewsConfig;
 
 class RatingSnippet extends ListProduct
 {
-    protected $_customerSession;
-    protected $categoryFactory;
-    //protected $reviewsConfig = Reviews\Helper\Config;
     // protected $_storeManager = StoreManagerInterface::class;
-    protected $store;
+    protected $_customerSession;
     protected $reviewsConfig;
+    protected $postDataHelper;
+    protected $layerResolver;
+    protected $categoryRepository;
+    protected $urlHelper;
+    protected $customerSession;
+    protected $categoryFactory;
+    protected $reviewsConfigHelper;
+    protected $storeManager;
+    protected $store;
+
     /**
      * ListProduct constructor.
      * @param \Magento\Catalog\Block\Product\Context $context
@@ -27,10 +34,11 @@ class RatingSnippet extends ListProduct
      * @param \Magento\Catalog\Model\Layer\Resolver $layerResolver
      * @param \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository
      * @param \Magento\Framework\Url\Helper\Data $urlHelper
-     * @param Helper $helper
      * @param array $data
      * @param \Magento\Customer\Model\Session $customerSession
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param \Reviewscouk\Reviews\Helper\Config $reviewsConfigHelper
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      */
     public function __construct(
         \Magento\Catalog\Block\Product\Context $context,
@@ -39,10 +47,10 @@ class RatingSnippet extends ListProduct
         \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         array $data = [],
-        \Magento\Customer\Model\Session $customerSession = null,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory = null,
-        ReviewsConfig $reviewsConfigHelper = null,
-        StoreManagerInterface $storeManager = null
+        ?\Magento\Customer\Model\Session $customerSession = null,
+        ?\Magento\Catalog\Model\CategoryFactory $categoryFactory = null,
+        ?ReviewsConfig $reviewsConfigHelper = null,
+        ?StoreManagerInterface $storeManager = null
     ) {
         $this->_customerSession = $customerSession;
         $this->categoryFactory = $categoryFactory;

@@ -60,16 +60,38 @@ class Feed implements HttpGetActionInterface
         $this->resultFactory = $resultFactory;
     }
 
-    private function getProductCollection()
+    private function getProductCollection($store)
     {
-        $collection = $this->productCollectionFactory->create();
-        /* Addtional */
-        $collection
-            ->addMinimalPrice()
-            ->addFinalPrice()
-            ->addTaxPercents()
+        $includeOutOfStock = $this->configHelper->includeOutOfStock($store->getId());
+        $includeDisabled = $this->configHelper->includeDisabledProducts($store->getId());
+        $collection = $this->productCollectionFactory->create()
             ->addAttributeToSelect('*')
+            ->setFlag('has_stock_status_filter', false)
             ->addUrlRewrite();
+
+        if (!$includeDisabled) {
+            $collection->addAttributeToFilter('status', ['in' => [
+                \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED
+            ]]);
+        }
+
+        if (!$includeOutOfStock) {
+            $collection->joinField(
+                'is_in_stock',
+                'cataloginventory_stock_item',
+                'is_in_stock',
+                'product_id=entity_id',
+                '{{table}}.stock_id=1',
+                'left'
+            )->addAttributeToFilter('is_in_stock', ['eq' => 1]);
+        }
+
+        if (!$includeOutOfStock && !$includeDisabled) {
+            $collection->addMinimalPrice()
+                ->addFinalPrice()
+                ->addTaxPercents();
+        }
+
         return $collection;
     }
 
@@ -125,8 +147,7 @@ class Feed implements HttpGetActionInterface
                     <title><![CDATA[" . $store->getName() . "]]></title>
                     <link>" . $store->getBaseUrl() . "</link>";
 
-            $products = $this->getProductCollection();
-
+            $products = $this->getProductCollection($store);
             foreach ($products as $product) {
                 $parentProductId = null;
                 $groupedParentId = null;

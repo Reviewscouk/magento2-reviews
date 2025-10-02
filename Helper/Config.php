@@ -25,6 +25,8 @@ class Config extends Framework\App\Helper\AbstractHelper
     const XML_CONFIG_PRODUCT_RICH_SNIPPETS_ENABLED = 'reviewscouk_reviews_onpage/richsnippets/product_enabled';
     const XML_CONFIG_PRODUCT_REVIEWS_ENABLED = 'reviewscouk_reviews_automation/collection/product_enabled';
     const XML_CONFIG_PRODUCT_FEED_ENABLED = 'reviewscouk_reviews_automation/product_feed/product_feed_enabled';
+    const XML_CONFIG_PRODUCT_FEED_DISABLED_PRODUCTS = 'reviewscouk_reviews_automation/product_feed/include_disabled_products';
+    const XML_CONFIG_PRODUCT_FEED_OUT_OF_STOCK = 'reviewscouk_reviews_automation/product_feed/include_out_of_stock';
     const XML_CONFIG_USE_GROUP_SKU = "reviewscouk_reviews_advanced/settings/used_grouped_skus";
 
 
@@ -35,6 +37,15 @@ class Config extends Framework\App\Helper\AbstractHelper
         $this->config = $scopeConfigInterface;
     }
 
+    public function includeOutOfStock($magentoStore)
+    {
+        return $this->getValue(self::XML_CONFIG_PRODUCT_FEED_OUT_OF_STOCK, $magentoStore);
+    }
+
+    public function includeDisabledProducts($magentoStore)
+    {
+        return $this->getValue(self::XML_CONFIG_PRODUCT_FEED_DISABLED_PRODUCTS, $magentoStore);
+    }
     public function isTabModeEnabled($magentoStore)
     {
         return $this->getValue(self::XML_CONFIG_USE_TAB_MODE, $magentoStore);

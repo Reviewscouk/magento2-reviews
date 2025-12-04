@@ -62,6 +62,12 @@
                     <label>Queue Invites:</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="invitation_trigger" translate="label" type="select" sortOrder="15" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Invitation Trigger:</label>
+                    <source_model>Reviewscouk\Reviews\Model\Config\Source\InvitationTrigger</source_model>
+                    <comment>Choose when to send review invitations. Default: Shipped</comment>
+                </field>
             </group>
             <group id="product_feed" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1"
                    showInStore="1">

@@ -4,6 +4,9 @@
     <event name="sales_order_shipment_save_after">
         <observer name="reviewscouk_reviews" instance="Reviewscouk\Reviews\Observer\SendOrderDetails"/>
     </event>
+    <event name="sales_order_save_after">
+        <observer name="reviewscouk_reviews_order_save" instance="Reviewscouk\Reviews\Observer\SendOrderDetails"/>
+    </event>
     <event name="admin_system_config_changed_section_reviewscouk_reviews_automation">
         <observer name="reviewscouk_reviews" instance="Reviewscouk\Reviews\Observer\UpdateProductFeed"/>
     </event>

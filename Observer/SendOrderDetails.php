@@ -33,9 +33,37 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
 
     public function execute(Framework\Event\Observer $observer)
     {
-        $shipment = $observer->getEvent()->getShipment();
-        $order = $shipment->getOrder();
-        $this->dispatchNotification($order);
+        $event = $observer->getEvent();
+
+        if ($event->getShipment()) {
+            $shipment = $event->getShipment();
+            $order = $shipment->getOrder();
+            $magento_store_id = $order->getStoreId();
+            $trigger = $this->configHelper->getInvitationTrigger($magento_store_id);
+
+            if ($trigger === 'shipped') {
+                $this->dispatchNotification($order);
+            }
+            return;
+        }
+
+        if ($event->getOrder()) {
+            $order = $event->getOrder();
+            $magento_store_id = $order->getStoreId();
+            $trigger = $this->configHelper->getInvitationTrigger($magento_store_id);
+
+            if ($trigger === 'completed') {
+                try {
+                    $state = $order->getState();
+                } catch (\Exception $e) {
+                    $state = null;
+                }
+
+                if ($state === \Magento\Sales\Model\Order::STATE_COMPLETE) {
+                    $this->dispatchNotification($order);
+                }
+            }
+        }
     }
 
     public function dispatchNotification($order)

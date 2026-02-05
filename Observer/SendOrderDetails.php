@@ -100,7 +100,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                     $name = $order->getBillingAddress()->getFirstName();
                 }
 
-                $productResponse = $this->apiModel->apiPost('/invitation', [
+                $productResponse = $this->apiModel->apiPost('invitation', [
                     'source'       => 'magento',
                     'name'         => $name,
                     'email'        => $order->getCustomerEmail(),

@@ -170,6 +170,18 @@ class Feed implements HttpGetActionInterface
                 $price = $product->getPrice();
                 $finalPrice = $product->getFinalPrice();
 
+                $description = $product->getDescription();
+                if (!is_string($description)) {
+                    $description = '';
+                }
+
+                if ($description === '') {
+                    $shortDescription = $product->getShortDescription();
+                    if (is_string($shortDescription)) {
+                        $description = $shortDescription;
+                    }
+                }
+
                 $productFeed .= "<item>
                         <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
                         <magento_product_id><![CDATA[" . $product->getId() . "]]></magento_product_id>
@@ -177,7 +189,7 @@ class Feed implements HttpGetActionInterface
                         <link><![CDATA[" . $productUrl . "]]></link>
                         <g:price>" . (!empty($price) ? number_format($price, 2) . " " . $store->getCurrentCurrency()->getCode() : '') . "</g:price>
                         <g:sale_price>" . (!empty($finalPrice) ? number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() : '') . "</g:sale_price>
-                        <description><![CDATA[]]></description>
+                        <description><![CDATA[" . $description . "]]></description>
                         <g:condition>new</g:condition>
                         <g:image_link><![CDATA[" . $imageLink . "]]></g:image_link>
                         <g:brand><![CDATA[" . $brand . "]]></g:brand>

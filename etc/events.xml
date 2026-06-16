@@ -10,4 +10,7 @@
     <event name="admin_system_config_changed_section_reviewscouk_reviews_automation">
         <observer name="reviewscouk_reviews" instance="Reviewscouk\Reviews\Observer\UpdateProductFeed"/>
     </event>
+    <event name="admin_system_config_changed_section_reviewscouk_reviews_setup">
+        <observer name="reviewscouk_reviews_setup" instance="Reviewscouk\Reviews\Observer\UpdateProductFeed"/>
+    </event>
 </config>

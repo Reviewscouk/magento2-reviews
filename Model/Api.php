@@ -40,14 +40,14 @@ class Api extends Framework\Model\AbstractModel
             [
                 'store: ' . $this->configHelper->getStoreId($magento_store_id),
                 'apikey: ' . $this->configHelper->getApiKey($magento_store_id),
-                'Content-Type: application/json'
             ]
         );
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         $response = curl_exec($ch);
         curl_close($ch);
+
         return $response;
     }
 

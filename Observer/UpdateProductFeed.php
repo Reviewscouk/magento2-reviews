@@ -28,7 +28,7 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
         $setFeed = $this->apiModel->apiPost(
             'integration/set-feed',
             [
-                'url' => $this->storeModel->getStore()->getBaseUrl() . 'reviews/index/feed',
+                'url' => $this->storeModel->getStore($scopeId)->getBaseUrl() . 'reviews/index/feed',
                 'format' => 'xml'
             ],
             $scopeId
@@ -39,7 +39,7 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
             'integration/app-installed',
             [
                 'platform' => 'magento',
-                'url' => isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ''
+                'url' => $this->storeModel->getStore($scopeId)->getBaseUrl()
             ],
             $scopeId
         );

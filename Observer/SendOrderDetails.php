@@ -87,11 +87,13 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                         // resolve grouped parents first, then configurable.
                         $productId = $item->getProduct()->getId();
                         $groupedParentIds = $this->groupedProductModel->getParentIdsByChild($productId);
-                        $configurableParentIds = $this->configProductModel->getParentIdsByChild($productId);
                         if (!empty($groupedParentIds)) {
                             $productId = $groupedParentIds[0];
-                        } elseif (!empty($configurableParentIds)) {
-                            $productId = $configurableParentIds[0];
+                        } else {
+                            $configurableParentIds = $this->configProductModel->getParentIdsByChild($productId);
+                            if (!empty($configurableParentIds)) {
+                                $productId = $configurableParentIds[0];
+                            }
                         }
                         $item = $this->productModel->create()->load($productId);
                     }

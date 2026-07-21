@@ -6,6 +6,7 @@ use Magento\Framework as Framework;
 use Reviewscouk\Reviews as Reviews;
 use Magento\Catalog as Catalog;
 use Magento\ConfigurableProduct as ConfigurableProduct;
+use Magento\GroupedProduct as GroupedProduct;
 use Magento\Store as Store;
 
 class SendOrderDetails implements Framework\Event\ObserverInterface
@@ -16,19 +17,22 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
     private $productModel;
     private $imageHelper;
     private $configProductModel;
+    private $groupedProductModel;
 
     public function __construct(
         Reviews\Helper\Config $config,
         Reviews\Model\Api $api,
         Catalog\Model\ProductFactory $product,
         Catalog\Helper\Image $image,
-        ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable $configurable
+        ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable $configurable,
+        GroupedProduct\Model\Product\Type\Grouped $grouped
     ) {
         $this->configHelper = $config;
         $this->apiModel = $api;
         $this->productModel = $product;
         $this->imageHelper = $image;
         $this->configProductModel = $configurable;
+        $this->groupedProductModel = $grouped;
     }
 
     public function execute(Framework\Event\Observer $observer)
@@ -77,15 +81,26 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                 foreach ($items as $item) {
 
                     if ($this->configHelper->isUsingGroupSkus($magento_store_id)) {
-                        // If product is part of a configurable product, use the configurable product details.
-                        if ($item->getProduct()->getTypeId() == 'simple' || $item->getProduct()->getTypeId() == \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
-                            $productId = $item->getProduct()->getId();
-                            $model = $this->productModel->create();
-                            $item = $model->load($productId);
+                        // If product is a variant of a grouped/configurable parent, send the
+                        // parent details so all variant reviews aggregate onto the parent SKU
+                        // (the on-site widget queries the parent SKU). Mirrors Feed.php:
+                        // resolve grouped parents first, then configurable.
+                        $productId = $item->getProduct()->getId();
+                        $groupedParentIds = $this->groupedProductModel->getParentIdsByChild($productId);
+                        if (!empty($groupedParentIds)) {
+                            $productId = $groupedParentIds[0];
+                        } else {
+                            $configurableParentIds = $this->configProductModel->getParentIdsByChild($productId);
+                            if (!empty($configurableParentIds)) {
+                                $productId = $configurableParentIds[0];
+                            }
                         }
+                        $item = $this->productModel->create()->load($productId);
                     }
                     $imageUrl = $this->imageHelper->init($item, 'product_page_image_large')->getUrl();
-                    $p[] = [
+                    // Key by SKU so multiple children of the same parent collapse to a single
+                    // invitation entry once their SKUs are rolled up to the parent.
+                    $p[$item->getSku()] = [
                         'image' => $imageUrl,
                         'id' => $item->getId(),
                         'sku' => $item->getSku(),
@@ -93,6 +108,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                         'pageUrl' => $item->getProductUrl()
                     ];
                 }
+                $p = array_values($p);
 
                 $name = $order->getCustomerName();
 

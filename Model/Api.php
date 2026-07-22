@@ -11,7 +11,7 @@ class Api extends Framework\Model\AbstractModel
 
     private $configHelper;
     private $messageInterface;
-    private $store;
+    private $storeManager;
 
     public function __construct(
         Reviews\Helper\Config $config,
@@ -21,14 +21,13 @@ class Api extends Framework\Model\AbstractModel
 
         $this->configHelper = $config;
         $this->messageInterface = $managerInterface;
-
-        $this->store = $storeManagerInterface->getStore();
+        $this->storeManager = $storeManagerInterface;
     }
 
     public function apiPost($url, $data, $magento_store_id = null)
     {
         if ($magento_store_id == null) {
-            $magento_store_id = $this->store->getId();
+            $magento_store_id = $this->storeManager->getStore()->getId();
         }
 
         $api_url = 'https://' . $this->getApiDomain($magento_store_id) . '/' . $url;

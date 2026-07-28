@@ -18,6 +18,13 @@ class RatingSnippet extends ListProduct
     protected $categoryFactory;
     //protected $reviewsConfig = Reviews\Helper\Config;
     // protected $_storeManager = StoreManagerInterface::class;
+    /**
+     * Store manager, not a store. Resolved to a concrete store view lazily in
+     * getCurrentStoreId() — see REVIEWS-4382 for why this is not done in the
+     * constructor.
+     *
+     * @var StoreManagerInterface|null
+     */
     protected $store;
     protected $reviewsConfig;
     /**
@@ -82,10 +89,39 @@ class RatingSnippet extends ListProduct
         return $productSkus;
     }
 
+    /**
+     * Resolve the current store view id for config scope lookups.
+     *
+     * Prefers the explicitly injected store manager (kept for backward
+     * compatibility with direct instantiation) and falls back to the one
+     * AbstractBlock receives via $context, which DI always populates.
+     *
+     * Resolution is deliberately lazy rather than done in the constructor,
+     * matching the pattern REVIEWS-4382 established in Model/Api.php: on
+     * headless/multi-store installs getStore() can throw at construction time.
+     *
+     * @return int|string|null Store id, or null to fall back to default scope.
+     */
+    private function getCurrentStoreId()
+    {
+        $storeManager = $this->store ?: $this->_storeManager;
+        if (!$storeManager) {
+            return null;
+        }
+
+        try {
+            return $storeManager->getStore()->getId();
+        } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+            // A category page must not fatal because scope resolution failed;
+            // fall back to default scope, which is the pre-fix behaviour.
+            return null;
+        }
+    }
+
     public function getRatingSnippet($product)
     {
         $escaper = new Escaper();
-        $ratingSnippetEnabled = $this->reviewsConfig->isCategoryRatingSnippetWidgetEnabled($this->store);
+        $ratingSnippetEnabled = $this->reviewsConfig->isCategoryRatingSnippetWidgetEnabled($this->getCurrentStoreId());
         $skus = $this->getProductSkus($product);
         $html = '';
         if($ratingSnippetEnabled) {

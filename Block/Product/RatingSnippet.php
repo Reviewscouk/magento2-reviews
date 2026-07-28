@@ -19,10 +19,6 @@ class RatingSnippet extends ListProduct
     //protected $reviewsConfig = Reviews\Helper\Config;
     // protected $_storeManager = StoreManagerInterface::class;
     /**
-     * Store manager, not a store. Resolved to a concrete store view lazily in
-     * getCurrentStoreId() — see REVIEWS-4382 for why this is not done in the
-     * constructor.
-     *
      * @var StoreManagerInterface|null
      */
     protected $store;
@@ -95,11 +91,6 @@ class RatingSnippet extends ListProduct
      * Prefers the explicitly injected store manager (kept for backward
      * compatibility with direct instantiation) and falls back to the one
      * AbstractBlock receives via $context, which DI always populates.
-     *
-     * Resolution is deliberately lazy rather than done in the constructor,
-     * matching the pattern REVIEWS-4382 established in Model/Api.php: on
-     * headless/multi-store installs getStore() can throw at construction time.
-     *
      * Protected so CustomRatingSnippet can gate its template swap on the same
      * scope, rather than growing a second scope-resolution path.
      *

@@ -100,9 +100,12 @@ class RatingSnippet extends ListProduct
      * matching the pattern REVIEWS-4382 established in Model/Api.php: on
      * headless/multi-store installs getStore() can throw at construction time.
      *
+     * Protected so CustomRatingSnippet can gate its template swap on the same
+     * scope, rather than growing a second scope-resolution path.
+     *
      * @return int|string|null Store id, or null to fall back to default scope.
      */
-    private function getCurrentStoreId()
+    protected function getCurrentStoreId()
     {
         $storeManager = $this->store ?: $this->_storeManager;
         if (!$storeManager) {

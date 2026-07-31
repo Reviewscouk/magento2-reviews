@@ -13,8 +13,12 @@ class CustomRatingSnippet extends \Reviewscouk\Reviews\Block\Product\RatingSnipp
      */
     public function getTemplate()
     {
-        $isEnabled = $this->_scopeConfig->isSetFlag('reviewscouk_reviews_onpage/widget/category_rating_snippet_widget_enabled');
-   
+        // Outer gate on the same feature getRatingSnippet() guards, so it has to
+        // read the same scope: go through the helper (which owns the config path)
+        // and the store resolution inherited from RatingSnippet, instead of a
+        // bare isSetFlag() that only ever sees default/global scope.
+        $isEnabled = $this->reviewsConfig->isCategoryRatingSnippetWidgetEnabled($this->getCurrentStoreId());
+
         if ($isEnabled) {
             return 'Reviewscouk_Reviews::category/list.phtml';
         }

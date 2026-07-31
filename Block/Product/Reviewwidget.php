@@ -133,7 +133,10 @@ class Reviewwidget extends Framework\View\Element\Template
 
     protected function getWidgetColor()
     {
-        $colour = $this->configHelper->getProductWidgetColour($this->store->getId());
+        // Config value is null when unset; coalesce so strpos()/preg_match() below
+        // always receive a string (passing null is deprecated on PHP 8.1+, and
+        // Magento's ErrorHandler turns that deprecation into a storefront 500).
+        $colour = $this->configHelper->getProductWidgetColour($this->store->getId()) ?? '';
         // people will sometimes put hash and sometimes they will forgot so we need to check for this error
         if (isset($colour) && strpos($colour, '#') === false) {
             $colour = '#' . $colour;

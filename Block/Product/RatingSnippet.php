@@ -18,6 +18,9 @@ class RatingSnippet extends ListProduct
     protected $categoryFactory;
     //protected $reviewsConfig = Reviews\Helper\Config;
     // protected $_storeManager = StoreManagerInterface::class;
+    /**
+     * @var StoreManagerInterface|null
+     */
     protected $store;
     protected $reviewsConfig;
     /**
@@ -39,10 +42,10 @@ class RatingSnippet extends ListProduct
         \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository,
         \Magento\Framework\Url\Helper\Data $urlHelper,
         array $data = [],
-        \Magento\Customer\Model\Session $customerSession = null,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory = null,
-        ReviewsConfig $reviewsConfigHelper = null,
-        StoreManagerInterface $storeManager = null
+        ?\Magento\Customer\Model\Session $customerSession = null,
+        ?\Magento\Catalog\Model\CategoryFactory $categoryFactory = null,
+        ?ReviewsConfig $reviewsConfigHelper = null,
+        ?StoreManagerInterface $storeManager = null
     ) {
         $this->_customerSession = $customerSession;
         $this->categoryFactory = $categoryFactory;
@@ -82,10 +85,37 @@ class RatingSnippet extends ListProduct
         return $productSkus;
     }
 
+    /**
+     * Resolve the current store view id for config scope lookups.
+     *
+     * Prefers the explicitly injected store manager (kept for backward
+     * compatibility with direct instantiation) and falls back to the one
+     * AbstractBlock receives via $context, which DI always populates.
+     * Protected so CustomRatingSnippet can gate its template swap on the same
+     * scope, rather than growing a second scope-resolution path.
+     *
+     * @return int|string|null Store id, or null to fall back to default scope.
+     */
+    protected function getCurrentStoreId()
+    {
+        $storeManager = $this->store ?: $this->_storeManager;
+        if (!$storeManager) {
+            return null;
+        }
+
+        try {
+            return $storeManager->getStore()->getId();
+        } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+            // A category page must not fatal because scope resolution failed;
+            // fall back to default scope, which is the pre-fix behaviour.
+            return null;
+        }
+    }
+
     public function getRatingSnippet($product)
     {
         $escaper = new Escaper();
-        $ratingSnippetEnabled = $this->reviewsConfig->isCategoryRatingSnippetWidgetEnabled($this->store);
+        $ratingSnippetEnabled = $this->reviewsConfig->isCategoryRatingSnippetWidgetEnabled($this->getCurrentStoreId());
         $skus = $this->getProductSkus($product);
         $html = '';
         if($ratingSnippetEnabled) {

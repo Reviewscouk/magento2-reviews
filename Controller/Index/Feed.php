@@ -228,6 +228,7 @@ class Feed implements HttpGetActionInterface
             // TODO:- Implement caching of feed
 
             $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+            $result->setHeader('Content-Type', 'application/xml; charset=UTF-8', true);
             $result->setContents($productFeed);
 
             return $result;

@@ -2,7 +2,6 @@
 
 namespace Reviewscouk\Reviews\Block;
 
-use Magento\Backend as Backend;
 use Magento\Directory as Directory;
 use Magento\Framework as Framework;
 use Magento\Framework\App\ObjectManager;
@@ -24,7 +23,6 @@ class Richsnippet extends Framework\View\Element\Template
         Reviews\Helper\Data $dataHelper,
         Framework\View\Element\Template\Context $context,
         Framework\Registry $registry,
-        Backend\Block\Template\Context $backend,
         Directory\Model\Currency $currency,
 
         array $data = []

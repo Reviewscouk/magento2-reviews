@@ -5,9 +5,11 @@ namespace Reviewscouk\Reviews\Model\Feed;
 use Magento\Catalog\Helper\Image;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Framework\App\Area;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Model\App\Emulation;
 use Reviewscouk\Reviews\Helper\Config;
 
 /**
@@ -27,6 +29,7 @@ class Generator
     private $configHelper;
     private $directoryList;
     private $resultFactory;
+    private $emulation;
 
     public function __construct(
         CollectionFactory $productCollectionFactory,
@@ -34,7 +37,8 @@ class Generator
         StockRegistryInterface $stockRegistryInterface,
         Config $configHelper,
         DirectoryList $directoryList,
-        ResultFactory $resultFactory
+        ResultFactory $resultFactory,
+        Emulation $emulation
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->imageHelper = $imageHelper;
@@ -42,6 +46,7 @@ class Generator
         $this->configHelper = $configHelper;
         $this->directoryList = $directoryList;
         $this->resultFactory = $resultFactory;
+        $this->emulation = $emulation;
     }
 
     /**
@@ -69,11 +74,18 @@ class Generator
             throw new \RuntimeException(sprintf('Unable to open feed generation lock for store "%s".', $store->getCode()));
         }
 
+        // Generation runs from admin, cron or CLI, none of which is the
+        // storefront. Emulate the target store's frontend so product/image
+        // URLs, prices and currency come out as that store would show them.
+        $this->emulation->startEnvironmentEmulation($store->getId(), Area::AREA_FRONTEND, true);
+
         try {
             flock($lockFile, LOCK_EX);
 
             $pageSize = self::PAGE_SIZE;
-            $totalProducts = (int) $this->productCollectionFactory->create()->getSize();
+            $totalProducts = (int) $this->productCollectionFactory->create()
+                ->setStoreId($store->getId())
+                ->getSize();
             $totalPages = (int) max(1, ceil($totalProducts / $pageSize));
 
             $pageFiles = [];
@@ -94,6 +106,7 @@ class Generator
         } finally {
             flock($lockFile, LOCK_UN);
             fclose($lockFile);
+            $this->emulation->stopEnvironmentEmulation();
         }
     }
 
@@ -141,10 +154,11 @@ class Generator
         return $this->directoryList->getPath(DirectoryList::VAR_DIR) . '/reviewscouk/feed/' . $store->getCode();
     }
 
-    private function getProductCollection($pageSize, $currentPage)
+    private function getProductCollection(StoreInterface $store, $pageSize, $currentPage)
     {
         $collection = $this->productCollectionFactory->create();
         $collection
+            ->setStoreId($store->getId())
             ->addMinimalPrice()
             ->addFinalPrice()
             ->addTaxPercents()
@@ -161,7 +175,7 @@ class Generator
     private function writePage(StoreInterface $store, $pageSize, $page, $pageFile): void
     {
         $handle = fopen($pageFile, 'w');
-        $products = $this->getProductCollection($pageSize, $page);
+        $products = $this->getProductCollection($store, $pageSize, $page);
 
         foreach ($products as $product) {
             $groupedParentId = null;

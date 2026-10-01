@@ -19,7 +19,6 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Controller\ResultFactory;
-use Psr\Log\LoggerInterface;
 use Reviewscouk\Reviews\Model\Feed\Generator;
 
 class Feed implements HttpGetActionInterface
@@ -34,7 +33,6 @@ class Feed implements HttpGetActionInterface
     protected $configurableType;
     protected $curl;
     protected $resultFactory;
-    protected $logger;
     protected $generator;
 
     public function __construct(
@@ -49,7 +47,6 @@ class Feed implements HttpGetActionInterface
         Configurable $configurableType,
         Curl $curl,
         ResultFactory $resultFactory,
-        LoggerInterface $logger,
         Generator $generator
     ) {
         // parent::__construct($context);
@@ -64,7 +61,6 @@ class Feed implements HttpGetActionInterface
         $this->configurableType = $configurableType;
         $this->curl = $curl;
         $this->resultFactory = $resultFactory;
-        $this->logger = $logger;
         $this->generator = $generator;
     }
 
@@ -116,81 +112,113 @@ class Feed implements HttpGetActionInterface
         }
     }
 
+    private function serveStaticFeed($store)
+    {
+        $feedPath = $this->generator->getFinalPath($store);
+
+        if (!is_file($feedPath)) {
+            $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+            $result->setHttpResponseCode(503);
+            $result->setHeader('Retry-After', '3600', true);
+            $result->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
+            $result->setContents('Product feed is being generated. Please check back shortly.');
+            return $result;
+        }
+
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        set_time_limit(0);
+
+        header('Content-Type: application/xml; charset=UTF-8');
+        header('Content-Length: ' . filesize($feedPath));
+        header('Cache-Control: no-store');
+
+        $handle = fopen($feedPath, 'rb');
+        fpassthru($handle);
+        fclose($handle);
+        exit;
+    }
+
     public function execute()
     {
+        $store = $this->storeModel->getStore();
+
+        if ($this->configHelper->isProductFeedFallbackEnabled($store->getId())) {
+            return $this->serveStaticFeed($store);
+        }
+
         // Set timelimit to 0 to avoid timeouts when generating feed.
         ob_start();
         set_time_limit(0);
 
-        $store = $this->storeModel->getStore();
-
         $productFeedEnabled = $this->configHelper->isProductFeedEnabled($store->getId());
         if ($productFeedEnabled) {
-            try {
-                $productFeed = "<?xml version='1.0'?>
+            // TODO:- Implement caching of Feed
+            $productFeed = "<?xml version='1.0'?>
                     <rss version ='2.0' xmlns:g='http://base.google.com/ns/1.0'>
                     <channel>
                     <title><![CDATA[" . $store->getName() . "]]></title>
                     <link>" . $store->getBaseUrl() . "</link>";
 
-                $products = $this->getProductCollection();
+            $products = $this->getProductCollection();
 
-                foreach ($products as $product) {
-                    $parentProductId = null;
-                    $groupedParentId = null;
-                    $configurableParentId = null;
-                    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            foreach ($products as $product) {
+                $parentProductId = null;
+                $groupedParentId = null;
+                $configurableParentId = null;
+                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 
-                    if ($objectManager->create('Magento\GroupedProduct\Model\Product\Type\Grouped')->getParentIdsByChild($product->getId())) {
-                        $groupedParentId = $objectManager->create('Magento\GroupedProduct\Model\Product\Type\Grouped')->getParentIdsByChild($product->getId());
-                    }
-                    if ($objectManager->create('Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable')->getParentIdsByChild($product->getId())) {
-                        $configurableParentId = $objectManager->create('Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable')->getParentIdsByChild($product->getId());
-                    }
+                if ($objectManager->create('Magento\GroupedProduct\Model\Product\Type\Grouped')->getParentIdsByChild($product->getId())) {
+                    $groupedParentId = $objectManager->create('Magento\GroupedProduct\Model\Product\Type\Grouped')->getParentIdsByChild($product->getId());
+                }
+                if ($objectManager->create('Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable')->getParentIdsByChild($product->getId())) {
+                    $configurableParentId = $objectManager->create('Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable')->getParentIdsByChild($product->getId());
+                }
 
-                    $parentId = null;
-                    $parentProduct = null;
+                $parentId = null;
+                $parentProduct = null;
 
-                    if (isset($groupedParentId[0])) {
-                        $parentId = $groupedParentId[0];
-                    } else if (isset($configurableParentId[0])) {
-                        $parentId = $configurableParentId[0];
-                    }
+                if (isset($groupedParentId[0])) {
+                    $parentId = $groupedParentId[0];
+                } else if (isset($configurableParentId[0])) {
+                    $parentId = $configurableParentId[0];
+                }
 
-                    // Load image url via helper.
-                    $productImageUrl = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
-                    $imageLink = $productImageUrl;
-                    $productUrl = $product->getProductUrl();
+                // Load image url via helper.
+                $productImageUrl = $this->imageHelper->init($product, 'product_page_image_large')->getUrl();
+                $imageLink = $productImageUrl;
+                $productUrl = $product->getProductUrl();
 
-                    if (isset($parentId)) {
-                        $parentProduct = $objectManager->create('Magento\Catalog\Model\Product')->load($parentId);
+                if (isset($parentId)) {
+                    $parentProduct = $objectManager->create('Magento\Catalog\Model\Product')->load($parentId);
 
-                        $parentProductImageUrl = $this->imageHelper->init($parentProduct, 'product_page_image_large')->getUrl();
-                        $validVariantImage = $this->validateImageUrl($productImageUrl);
-                        if (!$validVariantImage) {
-                            $imageLink = $parentProductImageUrl;
-                        }
-
-                        $productUrl = $parentProduct->getProductUrl();
+                    $parentProductImageUrl = $this->imageHelper->init($parentProduct, 'product_page_image_large')->getUrl();
+                    $validVariantImage = $this->validateImageUrl($productImageUrl);
+                    if (!$validVariantImage) {
+                        $imageLink = $parentProductImageUrl;
                     }
 
-                    $brand = $product->hasData('manufacturer') ? $product->getAttributeText('manufacturer') : ($product->hasData('brand') ? $product->getAttributeText('brand') : 'Not Available');
-                    $price = $product->getPrice();
-                    $finalPrice = $product->getFinalPrice();
+                    $productUrl = $parentProduct->getProductUrl();
+                }
 
-                    $description = $product->getDescription();
-                    if (!is_string($description)) {
-                        $description = '';
+                $brand = $product->hasData('manufacturer') ? $product->getAttributeText('manufacturer') : ($product->hasData('brand') ? $product->getAttributeText('brand') : 'Not Available');
+                $price = $product->getPrice();
+                $finalPrice = $product->getFinalPrice();
+
+                $description = $product->getDescription();
+                if (!is_string($description)) {
+                    $description = '';
+                }
+
+                if ($description === '') {
+                    $shortDescription = $product->getShortDescription();
+                    if (is_string($shortDescription)) {
+                        $description = $shortDescription;
                     }
+                }
 
-                    if ($description === '') {
-                        $shortDescription = $product->getShortDescription();
-                        if (is_string($shortDescription)) {
-                            $description = $shortDescription;
-                        }
-                    }
-
-                    $productFeed .= "<item>
+                $productFeed .= "<item>
                         <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
                         <magento_product_id><![CDATA[" . $product->getId() . "]]></magento_product_id>
                         <title><![CDATA[" . $product->getName() . "]]></title>
@@ -210,43 +238,37 @@ class Feed implements HttpGetActionInterface
                         <g:price>0 GBP</g:price>
                         </g:shipping>";
 
-                    $categoryCollection = $product->getCategoryCollection();
-                    if (count($categoryCollection) > 0) {
-                        foreach ($categoryCollection as $category) {
-                            $productFeed .= "<g:google_product_category><![CDATA[" . $category->getName() . "]]></g:google_product_category>";
-                        }
+                $categoryCollection = $product->getCategoryCollection();
+                if (count($categoryCollection) > 0) {
+                    foreach ($categoryCollection as $category) {
+                        $productFeed .= "<g:google_product_category><![CDATA[" . $category->getName() . "]]></g:google_product_category>";
                     }
-
-                    $stock = $this->stockModel->getStockItem(
-                        $product->getId(),
-                        $product->getStore()->getWebsiteId()
-                    );
-                    if ($stock->getIsInStock()) {
-                        $productFeed .= "<g:availability>in stock</g:availability>";
-                    } else {
-                        $productFeed .= "<g:availability>out of stock</g:availability>";
-                    }
-
-                    $productFeed .= "</item>";
-                    $parentProduct = null;
                 }
 
-                $productFeed .= "</channel></rss>";
+                $stock = $this->stockModel->getStockItem(
+                    $product->getId(),
+                    $product->getStore()->getWebsiteId()
+                );
+                if ($stock->getIsInStock()) {
+                    $productFeed .= "<g:availability>in stock</g:availability>";
+                } else {
+                    $productFeed .= "<g:availability>out of stock</g:availability>";
+                }
 
-                $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
-                $result->setHeader('Content-Type', 'application/xml; charset=UTF-8', true);
-                $result->setContents($productFeed);
-
-                return $result;
-            } catch (\Throwable $e) {
-                $this->logger->error(sprintf(
-                    'Reviewscouk product feed generation failed for store "%s": %s',
-                    $store->getCode(),
-                    $e->getMessage()
-                ), ['exception' => $e]);
-
-                return $this->generator->handleError($store);
+                $productFeed .= "</item>";
+                $parentProduct = null;
             }
+
+            $productFeed .= "</channel></rss>";
+
+            // TODO:- Implement caching of feed
+
+            $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+            $result->setHeader('Content-Type', 'application/xml; charset=UTF-8', true);
+            $result->setContents($productFeed);
+
+            return $result;
+            // exit();
         } else {
             print "Product Feed is disabled.";
         }

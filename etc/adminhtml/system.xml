@@ -16,7 +16,7 @@
                 <comment>
                     <![CDATA[
 						<div style="width:46%;float:left;padding-right:4%;border-right:1px solid #ccc;">
-							<h3>Already a </h3>
+							<h3>Already a Reviews.co.uk Customer?</h3>
 
 							<p>To configure this plugin you need to have your API credentials, which can be found on your Reviews.co.uk dashboard.</p>
 
@@ -81,6 +81,15 @@
                        showInWebsite="1" showInStore="1">
                     <label>Enable Product Feed:</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="product_feed_fallback_enabled" translate="label" type="select" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable Cron:</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If you're having memory issues, enable this option to use a pre-generated file instead.</comment>
+                    <depends>
+                        <field id="product_feed_enabled">1</field>
+                    </depends>
                 </field>
             </group>
         </section>

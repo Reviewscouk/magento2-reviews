@@ -87,9 +87,6 @@
                     <label>Enable Cron:</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>If you're having memory issues, enable this option to use a pre-generated file instead.</comment>
-                    <depends>
-                        <field id="product_feed_enabled">1</field>
-                    </depends>
                 </field>
             </group>
         </section>

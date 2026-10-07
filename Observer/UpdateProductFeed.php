@@ -5,10 +5,10 @@ namespace Reviewscouk\Reviews\Observer;
 use Reviewscouk\Reviews as Reviews;
 use Magento\Framework as Framework;
 use Magento\Store as Store;
-use Reviewscouk\Reviews\Console\Command\GenerateFeedCommand;
+use Magento\Cron\Model\Schedule;
+use Magento\Cron\Model\ScheduleFactory;
+use Magento\Cron\Model\ResourceModel\Schedule\CollectionFactory as ScheduleCollectionFactory;
 use Reviewscouk\Reviews\Model\Feed\Generator;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\NullOutput;
 
 class UpdateProductFeed implements Framework\Event\ObserverInterface
 {
@@ -16,20 +16,23 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
     private $apiModel;
     private $storeModel;
     private $configHelper;
-    private $generateFeedCommand;
+    private $scheduleFactory;
+    private $scheduleCollectionFactory;
     private $generator;
 
     public function __construct(
         Reviews\Model\Api $api,
         Store\Model\StoreManagerInterface $storeManagerInterface,
         Reviews\Helper\Config $configHelper,
-        GenerateFeedCommand $generateFeedCommand,
+        ScheduleFactory $scheduleFactory,
+        ScheduleCollectionFactory $scheduleCollectionFactory,
         Generator $generator
     ) {
         $this->apiModel = $api;
         $this->storeModel = $storeManagerInterface;
         $this->configHelper = $configHelper;
-        $this->generateFeedCommand = $generateFeedCommand;
+        $this->scheduleFactory = $scheduleFactory;
+        $this->scheduleCollectionFactory = $scheduleCollectionFactory;
         $this->generator = $generator;
     }
 
@@ -44,14 +47,8 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
         $feedUrl = $baseUrl . 'reviews/index/feed';
 
 
-        if ($this->configHelper->isProductFeedCronEnabled($scopeId)
-            && !is_file($this->generator->getFinalPath($store))
-        ) {
-            set_time_limit(0);
-            $this->generateFeedCommand->run(
-                new ArrayInput(['--store' => $store->getCode()]),
-                new NullOutput()
-            );
+        if ($this->configHelper->isProductFeedCronEnabled($scopeId) && !is_file($this->generator->getFinalPath($store))) {
+            $this->queueFeedGeneration();
         }
 
         $setFeed = $this->apiModel->apiPost(
@@ -74,6 +71,26 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
         );
         $this->apiModel->addStatusMessage($appInstalled, "Communication");
 
+    }
+
+    private function queueFeedGeneration(): void
+    {
+        $jobCode = 'reviewscouk_generate_product_feed';
+
+        $pending = $this->scheduleCollectionFactory->create()
+            ->addFieldToFilter('job_code', $jobCode) // check job name
+            ->addFieldToFilter('status', Schedule::STATUS_PENDING); // check if pendeding
+        if ($pending->getSize() > 0) {
+            return;
+        }
+
+        $now = gmdate('Y-m-d H:i:00');
+        $this->scheduleFactory->create()
+            ->setJobCode($jobCode)
+            ->setStatus(Schedule::STATUS_PENDING)
+            ->setCreatedAt($now)
+            ->setScheduledAt($now)
+            ->save();
     }
 
     /**

@@ -5,19 +5,32 @@ namespace Reviewscouk\Reviews\Observer;
 use Reviewscouk\Reviews as Reviews;
 use Magento\Framework as Framework;
 use Magento\Store as Store;
+use Reviewscouk\Reviews\Console\Command\GenerateFeedCommand;
+use Reviewscouk\Reviews\Model\Feed\Generator;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\NullOutput;
 
 class UpdateProductFeed implements Framework\Event\ObserverInterface
 {
 
     private $apiModel;
     private $storeModel;
+    private $configHelper;
+    private $generateFeedCommand;
+    private $generator;
 
     public function __construct(
         Reviews\Model\Api $api,
-        Store\Model\StoreManagerInterface $storeManagerInterface
+        Store\Model\StoreManagerInterface $storeManagerInterface,
+        Reviews\Helper\Config $configHelper,
+        GenerateFeedCommand $generateFeedCommand,
+        Generator $generator
     ) {
         $this->apiModel = $api;
         $this->storeModel = $storeManagerInterface;
+        $this->configHelper = $configHelper;
+        $this->generateFeedCommand = $generateFeedCommand;
+        $this->generator = $generator;
     }
 
     public function execute(Framework\Event\Observer $observer)
@@ -28,11 +41,23 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
         $store = $this->resolveStore($observer->getEvent());
         $scopeId = $store->getId();
         $baseUrl = $store->getBaseUrl();
+        $feedUrl = $baseUrl . 'reviews/index/feed';
+
+
+        if ($this->configHelper->isProductFeedCronEnabled($scopeId)
+            && !is_file($this->generator->getFinalPath($store))
+        ) {
+            set_time_limit(0);
+            $this->generateFeedCommand->run(
+                new ArrayInput(['--store' => $store->getCode()]),
+                new NullOutput()
+            );
+        }
 
         $setFeed = $this->apiModel->apiPost(
             'integration/set-feed',
             [
-                'url' => $baseUrl . 'reviews/index/feed',
+                'url' => $feedUrl,
                 'format' => 'xml'
             ],
             $scopeId

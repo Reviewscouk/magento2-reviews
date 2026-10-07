@@ -19,6 +19,7 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Controller\ResultFactory;
+use Reviewscouk\Reviews\Model\Feed\Generator;
 
 class Feed implements HttpGetActionInterface
 {
@@ -32,6 +33,7 @@ class Feed implements HttpGetActionInterface
     protected $configurableType;
     protected $curl;
     protected $resultFactory;
+    protected $generator;
 
     public function __construct(
         //Framework\App\Action\Context $context,
@@ -44,7 +46,8 @@ class Feed implements HttpGetActionInterface
         CollectionFactory $productCollectionFactory,
         Configurable $configurableType,
         Curl $curl,
-        ResultFactory $resultFactory
+        ResultFactory $resultFactory,
+        Generator $generator
     ) {
         // parent::__construct($context);
 
@@ -58,6 +61,7 @@ class Feed implements HttpGetActionInterface
         $this->configurableType = $configurableType;
         $this->curl = $curl;
         $this->resultFactory = $resultFactory;
+        $this->generator = $generator;
     }
 
     private function getProductCollection()
@@ -108,13 +112,45 @@ class Feed implements HttpGetActionInterface
         }
     }
 
+    private function serveStaticFeed($store)
+    {
+        $feedPath = $this->generator->getFinalPath($store);
+
+        if (!is_file($feedPath)) {
+            $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+            $result->setHttpResponseCode(503);
+            $result->setHeader('Retry-After', '3600', true);
+            $result->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
+            $result->setContents('Product feed is being generated. Please check back shortly.');
+            return $result;
+        }
+
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        set_time_limit(0);
+
+        header('Content-Type: application/xml; charset=UTF-8');
+        header('Content-Length: ' . filesize($feedPath));
+        header('Cache-Control: no-store');
+
+        $handle = fopen($feedPath, 'rb');
+        fpassthru($handle);
+        fclose($handle);
+        exit;
+    }
+
     public function execute()
     {
+        $store = $this->storeModel->getStore();
+
+        if ($this->configHelper->isProductFeedCronEnabled($store->getId())) {
+            return $this->serveStaticFeed($store);
+        }
+
         // Set timelimit to 0 to avoid timeouts when generating feed.
         ob_start();
         set_time_limit(0);
-
-        $store = $this->storeModel->getStore();
 
         $productFeedEnabled = $this->configHelper->isProductFeedEnabled($store->getId());
         if ($productFeedEnabled) {

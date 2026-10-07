@@ -82,6 +82,12 @@
                     <label>Enable Product Feed:</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="product_feed_cron_enabled" translate="label" type="select" sortOrder="20" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Generate product feed on a schedule (cron):</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Recommended for stores with large catalogues. Your product feed is prepared in the background on a schedule and served as a ready-made file, which avoids timeouts and memory errors. Requires Magento cron to be running. If the feed is slow or fails to load, turn this on.</comment>
+                </field>
             </group>
         </section>
         <section id="reviewscouk_reviews_onpage" translate="label" type="text" sortOrder="300" showInDefault="1"

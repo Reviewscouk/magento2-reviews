@@ -77,6 +77,24 @@ class GenerateFeedTest extends TestCase
         $this->cron->execute();
     }
 
+    public function testSkipsStoresWithFallbackDisabled(): void
+    {
+        $withFallback = $this->createStore(1, 'with_fallback');
+        $withoutFallback = $this->createStore(2, 'without_fallback');
+        $this->givenStores(
+            [$withFallback, $withoutFallback],
+            [1 => true, 2 => true],
+            [1 => true, 2 => false]
+        );
+
+        $this->generator->expects($this->once())
+            ->method('generate')
+            ->with($withFallback);
+        $this->logger->expects($this->never())->method('error');
+
+        $this->cron->execute();
+    }
+
     public function testLogsFailureAndContinuesWithNextStore(): void
     {
         $failing = $this->createStore(1, 'failing');
@@ -105,13 +123,18 @@ class GenerateFeedTest extends TestCase
     /**
      * @param StoreInterface[] $stores
      * @param bool[] $enabledByStoreId
+     * @param bool[]|null $fallbackByStoreId defaults to enabled for every store
      */
-    private function givenStores(array $stores, array $enabledByStoreId): void
+    private function givenStores(array $stores, array $enabledByStoreId, ?array $fallbackByStoreId = null): void
     {
         $this->storeManager->method('getStores')->willReturn($stores);
         $this->configHelper->method('isProductFeedEnabled')
             ->willReturnCallback(function ($storeId) use ($enabledByStoreId) {
                 return $enabledByStoreId[$storeId];
+            });
+        $this->configHelper->method('isProductFeedCronEnabled')
+            ->willReturnCallback(function ($storeId) use ($fallbackByStoreId) {
+                return $fallbackByStoreId === null ? true : $fallbackByStoreId[$storeId];
             });
     }
 

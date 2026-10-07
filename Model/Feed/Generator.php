@@ -22,6 +22,7 @@ use Reviewscouk\Reviews\Helper\Config;
 class Generator
 {
     private const PAGE_SIZE = 1000;
+    private const LOCK_TIMEOUT = 600;
 
     private $productCollectionFactory;
     private $imageHelper;
@@ -74,14 +75,19 @@ class Generator
             throw new \RuntimeException(sprintf('Unable to open feed generation lock for store "%s".', $store->getCode()));
         }
 
+        try {
+            $this->acquireLock($lockFile, $store);
+        } catch (\RuntimeException $e) {
+            fclose($lockFile);
+            throw $e;
+        }
+
         // Generation runs from admin, cron or CLI, none of which is the
         // storefront. Emulate the target store's frontend so product/image
         // URLs, prices and currency come out as that store would show them.
         $this->emulation->startEnvironmentEmulation($store->getId(), Area::AREA_FRONTEND, true);
 
         try {
-            flock($lockFile, LOCK_EX);
-
             $pageSize = self::PAGE_SIZE;
             $totalProducts = (int) $this->productCollectionFactory->create()
                 ->setStoreId($store->getId())
@@ -89,17 +95,20 @@ class Generator
             $totalPages = (int) max(1, ceil($totalProducts / $pageSize));
 
             $pageFiles = [];
-            for ($page = 1; $page <= $totalPages; $page++) {
-                $pageFile = $workDir . '/page_' . $page . '.xml';
-                $this->writePage($store, $pageSize, $page, $pageFile);
-                $pageFiles[] = $pageFile;
-            }
+            try {
+                for ($page = 1; $page <= $totalPages; $page++) {
+                    $pageFile = $workDir . '/page_' . $page . '.xml';
+                    // Registered before writing so a page that fails midway is cleaned up too.
+                    $pageFiles[] = $pageFile;
+                    $this->writePage($store, $pageSize, $page, $pageFile);
+                }
 
-            $finalPath = $this->getFinalPath($store);
-            $this->assemble($store, $pageFiles, $finalPath);
-
-            foreach ($pageFiles as $pageFile) {
-                @unlink($pageFile);
+                $finalPath = $this->getFinalPath($store);
+                $this->assemble($store, $pageFiles, $finalPath);
+            } finally {
+                foreach ($pageFiles as $pageFile) {
+                    @unlink($pageFile);
+                }
             }
 
             return $finalPath;
@@ -111,6 +120,30 @@ class Generator
     }
 
     /**
+     * Wait for the per-store lock, giving up after LOCK_TIMEOUT seconds so a
+     * stuck run can't hang every later one.
+     *
+     * @param resource $lockFile
+     * @throws \RuntimeException if the lock can't be acquired in time.
+     */
+    private function acquireLock($lockFile, StoreInterface $store): void
+    {
+        $deadline = microtime(true) + self::LOCK_TIMEOUT;
+        do {
+            if (flock($lockFile, LOCK_EX | LOCK_NB)) {
+                return;
+            }
+            usleep(250000);
+        } while (microtime(true) < $deadline);
+
+        throw new \RuntimeException(sprintf(
+            'Timed out after %d seconds waiting for the feed generation lock for store "%s".',
+            self::LOCK_TIMEOUT,
+            $store->getCode()
+        ));
+    }
+
+    /**
      * The public path the finished feed lives at for a given store.
      */
     public function getFinalPath(StoreInterface $store): string
@@ -118,35 +151,6 @@ class Generator
         $mediaDir = $this->directoryList->getPath(DirectoryList::MEDIA) . '/reviewscouk';
         $this->prepareDirectory($mediaDir);
         return $mediaDir . '/product_feed_' . $store->getCode() . '.xml';
-    }
-
-    /**
-     * Handle feed generation error: serve cached file if fallback enabled, else return error response.
-     */
-    public function handleError(StoreInterface $store)
-    {
-        if (!$this->configHelper->isProductFeedFallbackEnabled($store->getId())) {
-            return $this->errorResponse('There was an error generating the product feed. Try enabling the feed fallback in the admin.');
-        }
-
-        $feedPath = $this->getFinalPath($store);
-        if (is_file($feedPath)) {
-            header('Content-Type: application/xml; charset=UTF-8');
-            header('Content-Length: ' . filesize($feedPath));
-            readfile($feedPath);
-            exit;
-        }
-
-        return $this->errorResponse('Your file is being generated. Please check back shortly.');
-    }
-
-    private function errorResponse(string $message)
-    {
-        $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
-        $result->setHttpResponseCode(503);
-        $result->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
-        $result->setContents($message);
-        return $result;
     }
 
     private function getWorkDir(StoreInterface $store): string
@@ -175,6 +179,19 @@ class Generator
     private function writePage(StoreInterface $store, $pageSize, $page, $pageFile): void
     {
         $handle = fopen($pageFile, 'w');
+        if ($handle === false) {
+            throw new \RuntimeException(sprintf('Unable to open feed page file "%s" for writing.', $pageFile));
+        }
+
+        try {
+            $this->writePageItems($store, $pageSize, $page, $handle, $pageFile);
+        } finally {
+            fclose($handle);
+        }
+    }
+
+    private function writePageItems(StoreInterface $store, $pageSize, $page, $handle, string $pageFile): void
+    {
         $products = $this->getProductCollection($store, $pageSize, $page);
 
         foreach ($products as $product) {
@@ -230,7 +247,7 @@ class Generator
                 }
             }
 
-            fwrite($handle, "<item>
+            $this->write($handle, "<item>
                     <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
                     <magento_product_id><![CDATA[" . $product->getId() . "]]></magento_product_id>
                     <title><![CDATA[" . $product->getName() . "]]></title>
@@ -248,12 +265,12 @@ class Generator
                     <g:country>UK</g:country>
                     <g:service>Standard Free Shipping</g:service>
                     <g:price>0 GBP</g:price>
-                    </g:shipping>");
+                    </g:shipping>", $pageFile);
 
             $categoryCollection = $product->getCategoryCollection();
             if (count($categoryCollection) > 0) {
                 foreach ($categoryCollection as $category) {
-                    fwrite($handle, "<g:google_product_category><![CDATA[" . $category->getName() . "]]></g:google_product_category>");
+                    $this->write($handle, "<g:google_product_category><![CDATA[" . $category->getName() . "]]></g:google_product_category>", $pageFile);
                 }
             }
 
@@ -262,16 +279,27 @@ class Generator
                 $product->getStore()->getWebsiteId()
             );
             if ($stock->getIsInStock()) {
-                fwrite($handle, "<g:availability>in stock</g:availability>");
+                $this->write($handle, "<g:availability>in stock</g:availability>", $pageFile);
             } else {
-                fwrite($handle, "<g:availability>out of stock</g:availability>");
+                $this->write($handle, "<g:availability>out of stock</g:availability>", $pageFile);
             }
 
-            fwrite($handle, "</item>");
+            $this->write($handle, "</item>", $pageFile);
         }
 
-        fclose($handle);
         unset($products);
+    }
+
+    /**
+     * fwrite() returns false or a short count when the disk is full; treat
+     * either as a failure rather than silently producing a truncated feed.
+     */
+    private function write($handle, string $data, string $path): void
+    {
+        $written = fwrite($handle, $data);
+        if ($written === false || $written < strlen($data)) {
+            throw new \RuntimeException(sprintf('Failed writing to "%s" (disk full?).', $path));
+        }
     }
 
     private function validateImageUrl($imageUrl)
@@ -288,32 +316,59 @@ class Generator
     {
         $tmpPath = $finalPath . '.tmp';
         $handle = fopen($tmpPath, 'w');
+        if ($handle === false) {
+            throw new \RuntimeException(sprintf('Unable to open "%s" for writing.', $tmpPath));
+        }
 
-        fwrite($handle, "<?xml version='1.0'?>
+        try {
+            $this->write($handle, "<?xml version='1.0'?>
 <rss version ='2.0' xmlns:g='http://base.google.com/ns/1.0'>
 <channel>
 <title><![CDATA[" . $store->getName() . "]]></title>
-<link>" . $store->getBaseUrl() . "</link>");
+<link>" . $store->getBaseUrl() . "</link>", $tmpPath);
 
-        foreach ($pageFiles as $pageFile) {
-            if (!is_file($pageFile)) {
-                continue;
+            foreach ($pageFiles as $pageFile) {
+                if (!is_file($pageFile)) {
+                    continue;
+                }
+                $pageHandle = fopen($pageFile, 'r');
+                if ($pageHandle === false) {
+                    throw new \RuntimeException(sprintf('Unable to read feed page file "%s".', $pageFile));
+                }
+                try {
+                    if (stream_copy_to_stream($pageHandle, $handle) === false) {
+                        throw new \RuntimeException(sprintf('Failed copying "%s" into "%s" (disk full?).', $pageFile, $tmpPath));
+                    }
+                } finally {
+                    fclose($pageHandle);
+                }
             }
-            $pageHandle = fopen($pageFile, 'r');
-            stream_copy_to_stream($pageHandle, $handle);
-            fclose($pageHandle);
+
+            $this->write($handle, "</channel></rss>", $tmpPath);
+
+            // fclose flushes buffered data, so a full disk can surface here.
+            $closed = fclose($handle);
+            $handle = null;
+            if (!$closed) {
+                throw new \RuntimeException(sprintf('Failed flushing "%s" to disk.', $tmpPath));
+            }
+
+            if (!rename($tmpPath, $finalPath)) {
+                throw new \RuntimeException(sprintf('Unable to move "%s" to "%s".', $tmpPath, $finalPath));
+            }
+        } catch (\Throwable $e) {
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
+            @unlink($tmpPath);
+            throw $e;
         }
-
-        fwrite($handle, "</channel></rss>");
-        fclose($handle);
-
-        rename($tmpPath, $finalPath);
     }
 
     private function prepareDirectory(string $path): void
     {
-        if (!is_dir($path)) {
-            mkdir($path, 0755, true);
+        if (!is_dir($path) && !mkdir($path, 0755, true) && !is_dir($path)) {
+            throw new \RuntimeException(sprintf('Unable to create directory "%s".', $path));
         }
     }
 }

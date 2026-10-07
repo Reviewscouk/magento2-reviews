@@ -44,7 +44,7 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
         $feedUrl = $baseUrl . 'reviews/index/feed';
 
 
-        if ($this->configHelper->isProductFeedFallbackEnabled($scopeId)
+        if ($this->configHelper->isProductFeedCronEnabled($scopeId)
             && !is_file($this->generator->getFinalPath($store))
         ) {
             set_time_limit(0);

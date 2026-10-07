@@ -26,7 +26,7 @@ class Config extends Framework\App\Helper\AbstractHelper
     const XML_CONFIG_PRODUCT_REVIEWS_ENABLED = 'reviewscouk_reviews_automation/collection/product_enabled';
     const XML_CONFIG_INVITATION_TRIGGER = 'reviewscouk_reviews_automation/collection/invitation_trigger';
     const XML_CONFIG_PRODUCT_FEED_ENABLED = 'reviewscouk_reviews_automation/product_feed/product_feed_enabled';
-    const XML_CONFIG_PRODUCT_FEED_FALLBACK_ENABLED = 'reviewscouk_reviews_automation/product_feed/product_feed_fallback_enabled';
+    const XML_CONFIG_PRODUCT_FEED_CRON_ENABLED = 'reviewscouk_reviews_automation/product_feed/product_feed_cron_enabled';
     const XML_CONFIG_USE_GROUP_SKU = "reviewscouk_reviews_advanced/settings/used_grouped_skus";
 
 
@@ -118,9 +118,9 @@ class Config extends Framework\App\Helper\AbstractHelper
         return $this->getValue(self::XML_CONFIG_PRODUCT_FEED_ENABLED, $magentoStore);
     }
 
-    public function isProductFeedFallbackEnabled($magentoStore)
+    public function isProductFeedCronEnabled($magentoStore)
     {
-        return $this->getValue(self::XML_CONFIG_PRODUCT_FEED_FALLBACK_ENABLED, $magentoStore);
+        return $this->getValue(self::XML_CONFIG_PRODUCT_FEED_CRON_ENABLED, $magentoStore);
     }
 
     public function isAISummaryEnabled($magentoStore)

@@ -82,11 +82,11 @@
                     <label>Enable Product Feed:</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="product_feed_fallback_enabled" translate="label" type="select" sortOrder="20" showInDefault="1"
+                <field id="product_feed_cron_enabled" translate="label" type="select" sortOrder="20" showInDefault="1"
                        showInWebsite="1" showInStore="1">
-                    <label>Enable Cron:</label>
+                    <label>Generate product feed on a schedule (cron):</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>If you're having memory issues, enable this option to use a pre-generated file instead.</comment>
+                    <comment>Recommended for stores with large catalogues. Your product feed is prepared in the background on a schedule and served as a ready-made file, which avoids timeouts and memory errors. Requires Magento cron to be running. If the feed is slow or fails to load, turn this on.</comment>
                 </field>
             </group>
         </section>

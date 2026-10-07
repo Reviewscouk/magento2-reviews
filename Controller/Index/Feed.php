@@ -144,7 +144,7 @@ class Feed implements HttpGetActionInterface
     {
         $store = $this->storeModel->getStore();
 
-        if ($this->configHelper->isProductFeedFallbackEnabled($store->getId())) {
+        if ($this->configHelper->isProductFeedCronEnabled($store->getId())) {
             return $this->serveStaticFeed($store);
         }
 

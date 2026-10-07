@@ -34,7 +34,9 @@ class GenerateFeed
     public function execute(): void
     {
         foreach ($this->storeManager->getStores() as $store) {
-            if (!$this->configHelper->isProductFeedEnabled($store->getId())) {
+            if (!$this->configHelper->isProductFeedEnabled($store->getId())
+                || !$this->configHelper->isProductFeedCronEnabled($store->getId())
+            ) {
                 continue;
             }
             try {

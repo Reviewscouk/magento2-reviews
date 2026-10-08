@@ -7,17 +7,12 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\Filesystem\DirectoryList;
-use Magento\Framework\Controller\ResultFactory;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\App\Emulation;
 use Reviewscouk\Reviews\Helper\Config;
 
 /**
- * Builds the REVIEWS.io product feed as a static XML file instead of
- * generating it live inside an HTTP request. Each page of products is
- * written to its own small file, then all pages are concatenated into one
- * final file, swapped into place atomically so a concurrent fetch never
- * sees a half-written feed.
+ * Builds the REVIEWS.io product feed page by page, either to a static file (cron/CLI) or streamed to a response.
  */
 class Generator
 {
@@ -29,7 +24,6 @@ class Generator
     private $stockModel;
     private $configHelper;
     private $directoryList;
-    private $resultFactory;
     private $emulation;
 
     public function __construct(
@@ -38,7 +32,6 @@ class Generator
         StockRegistryInterface $stockRegistryInterface,
         Config $configHelper,
         DirectoryList $directoryList,
-        ResultFactory $resultFactory,
         Emulation $emulation
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
@@ -46,7 +39,6 @@ class Generator
         $this->stockModel = $stockRegistryInterface;
         $this->configHelper = $configHelper;
         $this->directoryList = $directoryList;
-        $this->resultFactory = $resultFactory;
         $this->emulation = $emulation;
     }
 
@@ -64,12 +56,7 @@ class Generator
         $workDir = $this->getWorkDir($store);
         $this->prepareDirectory($workDir);
 
-        // Serialize generation per store: an on-demand request can arrive
-        // while cron/console generation for the same store is already
-        // running, and a cache-cold burst of requests could otherwise pile
-        // up several full-catalog regenerations at once. Waiting for the
-        // in-flight run to finish (rather than racing it) keeps that burst
-        // down to one regeneration instead of N.
+        // Serialize file generation per store so overlapping cron/CLI runs don't race on the same file.
         $lockFile = fopen($workDir . '/generate.lock', 'c');
         if ($lockFile === false) {
             throw new \RuntimeException(sprintf('Unable to open feed generation lock for store "%s".', $store->getCode()));
@@ -88,28 +75,8 @@ class Generator
         $this->emulation->startEnvironmentEmulation($store->getId(), Area::AREA_FRONTEND, true);
 
         try {
-            $pageSize = self::PAGE_SIZE;
-            $totalProducts = (int) $this->productCollectionFactory->create()
-                ->setStoreId($store->getId())
-                ->getSize();
-            $totalPages = (int) max(1, ceil($totalProducts / $pageSize));
-
-            $pageFiles = [];
-            try {
-                for ($page = 1; $page <= $totalPages; $page++) {
-                    $pageFile = $workDir . '/page_' . $page . '.xml';
-                    // Registered before writing so a page that fails midway is cleaned up too.
-                    $pageFiles[] = $pageFile;
-                    $this->writePage($store, $pageSize, $page, $pageFile);
-                }
-
-                $finalPath = $this->getFinalPath($store);
-                $this->assemble($store, $pageFiles, $finalPath);
-            } finally {
-                foreach ($pageFiles as $pageFile) {
-                    @unlink($pageFile);
-                }
-            }
+            $finalPath = $this->getFinalPath($store);
+            $this->writeFile($store, $finalPath);
 
             return $finalPath;
         } finally {
@@ -158,7 +125,19 @@ class Generator
         return $this->directoryList->getPath(DirectoryList::VAR_DIR) . '/reviewscouk/feed/' . $store->getCode();
     }
 
-    private function getProductCollection(StoreInterface $store, $pageSize, $currentPage)
+    // Caller must already be in the store's frontend context (i.e. a storefront request).
+    public function stream(StoreInterface $store): void
+    {
+        $output = fopen('php://output', 'wb');
+        try {
+            $this->writeFeed($store, $output);
+        } finally {
+            fclose($output);
+        }
+    }
+
+    // Keyset on entity_id: stable order, no overlapping/skipped pages, no separate count query.
+    private function getProductCollection(StoreInterface $store, int $lastId)
     {
         $collection = $this->productCollectionFactory->create();
         $collection
@@ -168,32 +147,38 @@ class Generator
             ->addTaxPercents()
             ->addAttributeToSelect('*')
             ->addUrlRewrite()
-            ->setPageSize($pageSize)
-            ->setCurPage($currentPage);
+            ->addAttributeToFilter('entity_id', ['gt' => $lastId])
+            ->setOrder('entity_id', 'ASC')
+            ->setPageSize(self::PAGE_SIZE);
         return $collection;
     }
 
-    /**
-     * Write one page's <item> entries (no <rss>/<channel> wrapper) to its own file.
-     */
-    private function writePage(StoreInterface $store, $pageSize, $page, $pageFile): void
+    /** @param resource $handle */
+    private function writeFeed(StoreInterface $store, $handle): void
     {
-        $handle = fopen($pageFile, 'w');
-        if ($handle === false) {
-            throw new \RuntimeException(sprintf('Unable to open feed page file "%s" for writing.', $pageFile));
-        }
+        $this->write($handle, "<?xml version='1.0'?>
+<rss version ='2.0' xmlns:g='http://base.google.com/ns/1.0'>
+<channel>
+<title><![CDATA[" . $store->getName() . "]]></title>
+<link>" . $store->getBaseUrl() . "</link>");
 
-        try {
-            $this->writePageItems($store, $pageSize, $page, $handle, $pageFile);
-        } finally {
-            fclose($handle);
-        }
+        $lastId = 0;
+        do {
+            $products = $this->getProductCollection($store, $lastId);
+            $count = count($products);
+            if ($count > 0) {
+                $lastId = (int) $products->getLastItem()->getId();
+            }
+            $this->writePageItems($store, $products, $handle);
+            unset($products);
+        } while ($count === self::PAGE_SIZE);
+
+        $this->write($handle, "</channel></rss>");
     }
 
-    private function writePageItems(StoreInterface $store, $pageSize, $page, $handle, string $pageFile): void
+    /** @param resource $handle */
+    private function writePageItems(StoreInterface $store, $products, $handle): void
     {
-        $products = $this->getProductCollection($store, $pageSize, $page);
-
         foreach ($products as $product) {
             $groupedParentId = null;
             $configurableParentId = null;
@@ -265,12 +250,12 @@ class Generator
                     <g:country>UK</g:country>
                     <g:service>Standard Free Shipping</g:service>
                     <g:price>0 GBP</g:price>
-                    </g:shipping>", $pageFile);
+                    </g:shipping>");
 
             $categoryCollection = $product->getCategoryCollection();
             if (count($categoryCollection) > 0) {
                 foreach ($categoryCollection as $category) {
-                    $this->write($handle, "<g:google_product_category><![CDATA[" . $category->getName() . "]]></g:google_product_category>", $pageFile);
+                    $this->write($handle, "<g:google_product_category><![CDATA[" . $category->getName() . "]]></g:google_product_category>");
                 }
             }
 
@@ -279,26 +264,24 @@ class Generator
                 $product->getStore()->getWebsiteId()
             );
             if ($stock->getIsInStock()) {
-                $this->write($handle, "<g:availability>in stock</g:availability>", $pageFile);
+                $this->write($handle, "<g:availability>in stock</g:availability>");
             } else {
-                $this->write($handle, "<g:availability>out of stock</g:availability>", $pageFile);
+                $this->write($handle, "<g:availability>out of stock</g:availability>");
             }
 
-            $this->write($handle, "</item>", $pageFile);
+            $this->write($handle, "</item>");
         }
-
-        unset($products);
     }
 
     /**
      * fwrite() returns false or a short count when the disk is full; treat
      * either as a failure rather than silently producing a truncated feed.
      */
-    private function write($handle, string $data, string $path): void
+    private function write($handle, string $data): void
     {
         $written = fwrite($handle, $data);
         if ($written === false || $written < strlen($data)) {
-            throw new \RuntimeException(sprintf('Failed writing to "%s" (disk full?).', $path));
+            throw new \RuntimeException(sprintf('Failed writing to "%s" (disk full?).', stream_get_meta_data($handle)['uri']));
         }
     }
 
@@ -308,11 +291,9 @@ class Generator
     }
 
     /**
-     * Concatenate every page file into one final feed, wrapped in the XML
-     * envelope, writing to a temp path first and renaming into place so
-     * readers never see a partially-written file.
+     * Write the feed to a temp path, then rename into place so readers never see a partial file.
      */
-    private function assemble(StoreInterface $store, array $pageFiles, string $finalPath): void
+    private function writeFile(StoreInterface $store, string $finalPath): void
     {
         $tmpPath = $finalPath . '.tmp';
         $handle = fopen($tmpPath, 'w');
@@ -321,30 +302,7 @@ class Generator
         }
 
         try {
-            $this->write($handle, "<?xml version='1.0'?>
-<rss version ='2.0' xmlns:g='http://base.google.com/ns/1.0'>
-<channel>
-<title><![CDATA[" . $store->getName() . "]]></title>
-<link>" . $store->getBaseUrl() . "</link>", $tmpPath);
-
-            foreach ($pageFiles as $pageFile) {
-                if (!is_file($pageFile)) {
-                    continue;
-                }
-                $pageHandle = fopen($pageFile, 'r');
-                if ($pageHandle === false) {
-                    throw new \RuntimeException(sprintf('Unable to read feed page file "%s".', $pageFile));
-                }
-                try {
-                    if (stream_copy_to_stream($pageHandle, $handle) === false) {
-                        throw new \RuntimeException(sprintf('Failed copying "%s" into "%s" (disk full?).', $pageFile, $tmpPath));
-                    }
-                } finally {
-                    fclose($pageHandle);
-                }
-            }
-
-            $this->write($handle, "</channel></rss>", $tmpPath);
+            $this->writeFeed($store, $handle);
 
             // fclose flushes buffered data, so a full disk can surface here.
             $closed = fclose($handle);

@@ -45,7 +45,6 @@ class Api extends Framework\Model\AbstractModel
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         $response = curl_exec($ch);
-        curl_close($ch);
 
         return $response;
     }

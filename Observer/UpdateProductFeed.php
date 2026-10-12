@@ -9,6 +9,7 @@ use Magento\Cron\Model\Schedule;
 use Magento\Cron\Model\ScheduleFactory;
 use Magento\Cron\Model\ResourceModel\Schedule\CollectionFactory as ScheduleCollectionFactory;
 use Reviewscouk\Reviews\Model\Feed\Generator;
+use Psr\Log\LoggerInterface;
 
 class UpdateProductFeed implements Framework\Event\ObserverInterface
 {
@@ -19,6 +20,8 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
     private $scheduleFactory;
     private $scheduleCollectionFactory;
     private $generator;
+    private $messageManager;
+    private $logger;
 
     public function __construct(
         Reviews\Model\Api $api,
@@ -26,7 +29,9 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
         Reviews\Helper\Config $configHelper,
         ScheduleFactory $scheduleFactory,
         ScheduleCollectionFactory $scheduleCollectionFactory,
-        Generator $generator
+        Generator $generator,
+        Framework\Message\ManagerInterface $messageManager,
+        LoggerInterface $logger
     ) {
         $this->apiModel = $api;
         $this->storeModel = $storeManagerInterface;
@@ -34,6 +39,8 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
         $this->scheduleFactory = $scheduleFactory;
         $this->scheduleCollectionFactory = $scheduleCollectionFactory;
         $this->generator = $generator;
+        $this->messageManager = $messageManager;
+        $this->logger = $logger;
     }
 
     /**

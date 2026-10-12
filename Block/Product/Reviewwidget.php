@@ -100,9 +100,6 @@ class Reviewwidget extends Framework\View\Element\Template
         $widgetHtml = curl_exec($ch);
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        curl_close($ch);
-
-
         if ($httpcode == 200) {
             return $widgetHtml;
         }

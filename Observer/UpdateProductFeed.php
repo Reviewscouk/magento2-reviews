@@ -78,8 +78,8 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
         $jobCode = 'reviewscouk_generate_product_feed';
 
         $pending = $this->scheduleCollectionFactory->create()
-            ->addFieldToFilter('job_code', $jobCode) // check job name
-            ->addFieldToFilter('status', Schedule::STATUS_PENDING); // check if pendeding
+            ->addFieldToFilter('job_code', $jobCode)
+            ->addFieldToFilter('status', Schedule::STATUS_PENDING);
         if ($pending->getSize() > 0) {
             return;
         }

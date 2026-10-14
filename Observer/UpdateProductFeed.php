@@ -54,25 +54,17 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
      */
     public function execute(Framework\Event\Observer $observer)
     {
-        try {
-            // Resolve a concrete store view from the config-save scope before
-            // touching getStore()/getBaseUrl(), so headless/multi-store installs
-            // (admin host not a registered store view) don't blow up.
-            $store = $this->resolveStore($observer->getEvent());
-            $scopeId = $store->getId();
-            $baseUrl = $store->getBaseUrl();
-        } catch (\Throwable $e) {
-            $this->reportFailure('Syncing Product Feed Configuration', $e);
-            return;
-        }
+        // Resolve a concrete store view from the config-save scope before
+        // touching getStore()/getBaseUrl(), so headless/multi-store installs
+        // (admin host not a registered store view) don't blow up.
+        $store = $this->resolveStore($observer->getEvent());
+        $scopeId = $store->getId();
+        $baseUrl = $store->getBaseUrl();
         $feedUrl = $baseUrl . 'reviews/index/feed';
 
-        try {
-            if ($this->shouldQueueFeedGeneration($store, (array) $observer->getEvent()->getChangedPaths())) {
-                $this->queueFeedGeneration();
-            }
-        } catch (\Throwable $e) {
-            $this->reportFailure('Queueing Product Feed Generation', $e);
+
+        if ($this->configHelper->isProductFeedCronEnabled($scopeId) && !is_file($this->generator->getFinalPath($store))) {
+            $this->queueFeedGeneration();
         }
 
         $this->postToApi(
@@ -126,32 +118,6 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
     {
         $this->logger->error('REVIEWS.io ' . $task . ' failed: ' . $e->getMessage(), ['exception' => $e]);
         $this->messageManager->addErrorMessage($task . ' Error: ' . $e->getMessage());
-    }
-
-    /**
-     * Queue a build when the feed is served from a static file and either no
-     * file exists yet or the feed/cron setting was just switched on, so a file
-     * left over from before the feed was disabled isn't served stale.
-     *
-     * @param \Magento\Store\Api\Data\StoreInterface $store
-     * @param string[] $changedPaths
-     * @return bool
-     */
-    private function shouldQueueFeedGeneration($store, array $changedPaths): bool
-    {
-        $scopeId = $store->getId();
-        if (!$this->configHelper->isProductFeedEnabled($scopeId)
-            || !$this->configHelper->isProductFeedCronEnabled($scopeId)
-        ) {
-            return false;
-        }
-
-        $justEnabled = array_intersect($changedPaths, [
-            Reviews\Helper\Config::XML_CONFIG_PRODUCT_FEED_ENABLED,
-            Reviews\Helper\Config::XML_CONFIG_PRODUCT_FEED_CRON_ENABLED,
-        ]);
-
-        return $justEnabled || !is_file($this->generator->getFinalPath($store));
     }
 
     private function queueFeedGeneration(): void

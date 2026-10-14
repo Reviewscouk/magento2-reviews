@@ -64,13 +64,13 @@ class Feed implements HttpGetActionInterface
     {
         $store = $this->storeModel->getStore();
 
+        if ($this->configHelper->isProductFeedCronEnabled($store->getId())) {
+            return $this->serveStaticFeed($store);
+        }
+
         if (!$this->configHelper->isProductFeedEnabled($store->getId())) {
             print "Product Feed is disabled.";
             return;
-        }
-
-        if ($this->configHelper->isProductFeedCronEnabled($store->getId())) {
-            return $this->serveStaticFeed($store);
         }
 
         $this->beginXmlOutput();

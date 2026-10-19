@@ -32,11 +32,8 @@ class Feed implements HttpGetActionInterface
         $feedPath = $this->generator->getFinalPath($store);
 
         if (!is_file($feedPath)) {
-            $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
-            $result->setHttpResponseCode(503);
+            $result = $this->plainTextResponse(503, 'Product feed is being generated. Please check back shortly.');
             $result->setHeader('Retry-After', '3600', true);
-            $result->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
-            $result->setContents('Product feed is being generated. Please check back shortly.');
             return $result;
         }
 
@@ -46,6 +43,15 @@ class Feed implements HttpGetActionInterface
         readfile($feedPath);
 
         exit;
+    }
+
+    private function plainTextResponse(int $code, string $message)
+    {
+        $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
+        $result->setHttpResponseCode($code);
+        $result->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
+        $result->setContents($message);
+        return $result;
     }
 
     private function beginXmlOutput(): void
@@ -64,13 +70,12 @@ class Feed implements HttpGetActionInterface
     {
         $store = $this->storeModel->getStore();
 
-        if ($this->configHelper->isProductFeedCronEnabled($store->getId())) {
-            return $this->serveStaticFeed($store);
+        if (!$this->configHelper->isProductFeedEnabled($store->getId())) {
+            return $this->plainTextResponse(404, 'Product Feed is disabled.');
         }
 
-        if (!$this->configHelper->isProductFeedEnabled($store->getId())) {
-            print "Product Feed is disabled.";
-            return;
+        if ($this->configHelper->isProductFeedCronEnabled($store->getId())) {
+            return $this->serveStaticFeed($store);
         }
 
         $this->beginXmlOutput();

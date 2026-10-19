@@ -54,17 +54,26 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
      */
     public function execute(Framework\Event\Observer $observer)
     {
-        // Resolve a concrete store view from the config-save scope before
-        // touching getStore()/getBaseUrl(), so headless/multi-store installs
-        // (admin host not a registered store view) don't blow up.
-        $store = $this->resolveStore($observer->getEvent());
-        $scopeId = $store->getId();
-        $baseUrl = $store->getBaseUrl();
+        try {
+            // Resolve a concrete store view from the config-save scope before
+            // touching getStore()/getBaseUrl(), so headless/multi-store installs
+            // (admin host not a registered store view) don't blow up.
+            $store = $this->resolveStore($observer->getEvent());
+            $scopeId = $store->getId();
+            $baseUrl = $store->getBaseUrl();
+        } catch (\Throwable $e) {
+            $this->reportFailure('Syncing Product Feed Configuration', $e);
+            return;
+        }
         $feedUrl = $baseUrl . 'reviews/index/feed';
 
 
-        if ($this->configHelper->isProductFeedCronEnabled($scopeId) && !is_file($this->generator->getFinalPath($store))) {
-            $this->queueFeedGeneration();
+        try {
+            if ($this->configHelper->isProductFeedCronEnabled($scopeId) && !is_file($this->generator->getFinalPath($store))) {
+                $this->queueFeedGeneration();
+            }
+        } catch (\Throwable $e) {
+            $this->reportFailure('Queueing Product Feed Generation', $e);
         }
 
         $this->postToApi(

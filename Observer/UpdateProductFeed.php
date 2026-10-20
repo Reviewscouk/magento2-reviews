@@ -5,6 +5,10 @@ namespace Reviewscouk\Reviews\Observer;
 use Reviewscouk\Reviews as Reviews;
 use Magento\Framework as Framework;
 use Magento\Store as Store;
+use Magento\Cron\Model\Schedule;
+use Magento\Cron\Model\ScheduleFactory;
+use Magento\Cron\Model\ResourceModel\Schedule\CollectionFactory as ScheduleCollectionFactory;
+use Reviewscouk\Reviews\Model\Feed\Generator;
 use Psr\Log\LoggerInterface;
 
 class UpdateProductFeed implements Framework\Event\ObserverInterface
@@ -12,17 +16,29 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
 
     private $apiModel;
     private $storeModel;
+    private $configHelper;
+    private $scheduleFactory;
+    private $scheduleCollectionFactory;
+    private $generator;
     private $messageManager;
     private $logger;
 
     public function __construct(
         Reviews\Model\Api $api,
         Store\Model\StoreManagerInterface $storeManagerInterface,
+        Reviews\Helper\Config $configHelper,
+        ScheduleFactory $scheduleFactory,
+        ScheduleCollectionFactory $scheduleCollectionFactory,
+        Generator $generator,
         Framework\Message\ManagerInterface $messageManager,
         LoggerInterface $logger
     ) {
         $this->apiModel = $api;
         $this->storeModel = $storeManagerInterface;
+        $this->configHelper = $configHelper;
+        $this->scheduleFactory = $scheduleFactory;
+        $this->scheduleCollectionFactory = $scheduleCollectionFactory;
+        $this->generator = $generator;
         $this->messageManager = $messageManager;
         $this->logger = $logger;
     }
@@ -49,11 +65,21 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
             $this->reportFailure('Syncing Product Feed Configuration', $e);
             return;
         }
+        $feedUrl = $baseUrl . 'reviews/index/feed';
+
+
+        try {
+            if ($this->configHelper->isProductFeedCronEnabled($scopeId) && !is_file($this->generator->getFinalPath($store))) {
+                $this->queueFeedGeneration();
+            }
+        } catch (\Throwable $e) {
+            $this->reportFailure('Queueing Product Feed Generation', $e);
+        }
 
         $this->postToApi(
             'integration/set-feed',
             [
-                'url' => $baseUrl . 'reviews/index/feed',
+                'url' => $feedUrl,
                 'format' => 'xml'
             ],
             $scopeId,
@@ -101,6 +127,26 @@ class UpdateProductFeed implements Framework\Event\ObserverInterface
     {
         $this->logger->error('REVIEWS.io ' . $task . ' failed: ' . $e->getMessage(), ['exception' => $e]);
         $this->messageManager->addErrorMessage($task . ' Error: ' . $e->getMessage());
+    }
+
+    private function queueFeedGeneration(): void
+    {
+        $jobCode = 'reviewscouk_generate_product_feed';
+
+        $pending = $this->scheduleCollectionFactory->create()
+            ->addFieldToFilter('job_code', $jobCode)
+            ->addFieldToFilter('status', Schedule::STATUS_PENDING);
+        if ($pending->getSize() > 0) {
+            return;
+        }
+
+        $now = gmdate('Y-m-d H:i:00');
+        $this->scheduleFactory->create()
+            ->setJobCode($jobCode)
+            ->setStatus(Schedule::STATUS_PENDING)
+            ->setCreatedAt($now)
+            ->setScheduledAt($now)
+            ->save();
     }
 
     /**

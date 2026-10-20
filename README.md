@@ -7,10 +7,10 @@ You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.
 
 | Magento Version | Php Version | REVIEWS.io Plugin Version  |
 |-----------------|-------------|----------------------------|
-| >= 2.4.9        | 8.5         | reviewscouk/reviews:0.0.78 |
-| >= 2.4.6        | 8.1, 8.2    | reviewscouk/reviews:0.0.78 |
-| >= 2.4.4        | 8.1         | reviewscouk/reviews:0.0.78 |
-| <= 2.4.3        | <= 7.4      | reviewscouk/reviews:0.0.78 |
+| >= 2.4.9        | 8.5         | reviewscouk/reviews:0.1.1  |
+| >= 2.4.6        | 8.1, 8.2    | reviewscouk/reviews:0.1.1  |
+| >= 2.4.4        | 8.1         | reviewscouk/reviews:0.1.1  |
+| <= 2.4.3        | <= 7.4      | reviewscouk/reviews:0.1.1  |
 
 # Installation
 
@@ -19,7 +19,7 @@ You'll need to sign up at [Reviews.co.uk](https://www.reviews.co.uk "Reviews.co.
 2. As this plugin is hosted on [packagist.org](http://packagist.org), you simply use the following to instruct composer to fetch and install the module:
 
     ```bash
-    composer require reviewscouk/reviews:0.0.78
+    composer require reviewscouk/reviews:0.1.1
     ```
 
 3. When this is complete, `cd` to `/bin` and run the following:
@@ -62,6 +62,11 @@ The product feed allows you to sync your product catalog with the Reviews platfo
 1. Navigate to  `Stores -> Configuration -> Reviews.co.uk -> Automation -> Product Feed`
 2. Under _Product Feed_, set __Product Feed__ to _Yes_.
 3. When you save these settings, the URL of your feed will automatically be added to your Reviews account.
+
+For large catalogues, set __Generate product feed on a schedule (cron)__ to _Yes_. The feed is then built in the background and served as a ready-made file, which avoids timeouts and memory errors. This requires Magento cron to be running.
+
+- The feed is regenerated daily at 02:00 (in the store's configured timezone). Saving these settings also queues a first run if no feed file exists yet.
+- Until that first run completes, the feed URL returns `503` with a `Retry-After` header.
 
 ### Product Reviews Widget
 

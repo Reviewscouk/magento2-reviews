@@ -7,8 +7,10 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\App\Emulation;
+use Magento\Store\Model\Store;
 use Reviewscouk\Reviews\Helper\Config;
 
 /**
@@ -25,6 +27,10 @@ class Generator
     private $configHelper;
     private $directoryList;
     private $emulation;
+    private $request;
+
+    /** @var array<string, string> wrong link prefix => storefront link prefix, for the feed being written */
+    private $linkPrefixes = [];
 
     public function __construct(
         CollectionFactory $productCollectionFactory,
@@ -32,7 +38,8 @@ class Generator
         StockRegistryInterface $stockRegistryInterface,
         Config $configHelper,
         DirectoryList $directoryList,
-        Emulation $emulation
+        Emulation $emulation,
+        HttpRequest $request
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->imageHelper = $imageHelper;
@@ -40,6 +47,7 @@ class Generator
         $this->configHelper = $configHelper;
         $this->directoryList = $directoryList;
         $this->emulation = $emulation;
+        $this->request = $request;
     }
 
     /**
@@ -156,11 +164,13 @@ class Generator
     /** @param resource $handle */
     private function writeFeed(StoreInterface $store, $handle): void
     {
+        $this->linkPrefixes = $this->getLinkPrefixes($store);
+
         $this->write($handle, "<?xml version='1.0'?>
 <rss version ='2.0' xmlns:g='http://base.google.com/ns/1.0'>
 <channel>
 <title><![CDATA[" . $store->getName() . "]]></title>
-<link>" . $store->getBaseUrl() . "</link>");
+<link>" . $this->fixLink($store->getBaseUrl()) . "</link>");
 
         $lastId = 0;
         do {
@@ -215,6 +225,7 @@ class Generator
 
                 $productUrl = $parentProduct->getProductUrl();
             }
+            $productUrl = $this->fixLink($productUrl);
 
             $brand = $product->hasData('manufacturer') ? $product->getAttributeText('manufacturer') : ($product->hasData('brand') ? $product->getAttributeText('brand') : 'Not Available');
             $price = $product->getPrice();
@@ -231,6 +242,8 @@ class Generator
                     $description = $shortDescription;
                 }
             }
+
+            $description = $this->toPlainText($description);
 
             $this->write($handle, "<item>
                     <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
@@ -283,6 +296,55 @@ class Generator
         if ($written === false || $written < strlen($data)) {
             throw new \RuntimeException(sprintf('Failed writing to "%s" (disk full?).', stream_get_meta_data($handle)['uri']));
         }
+    }
+
+
+    private function toPlainText(string $html): string
+    {
+        $text = preg_replace('#<(script|style)\b[^>]*>.*?</\1>#is', '', $html);
+        $text = preg_replace('/\{\{.*?\}\}/s', '', $text);
+        // Keep words in adjacent block elements from running together once tags go.
+        $text = preg_replace('#<(br|/p|/div|/li|/h[1-6]|/tr)\b[^>]*>#i', ' ', $text);
+        $text = strip_tags($text);
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // /u also folds the non-breaking spaces &nbsp; decodes to; it fails on invalid UTF-8, so fall back.
+        $text = trim(preg_replace('/\s+/u', ' ', $text) ?? preg_replace('/\s+/', ' ', $text));
+
+        // "]]>" would close the CDATA section early and break the XML.
+        return str_replace(']]>', ']]]]><![CDATA[>', $text);
+    }
+
+    /**
+     * With URL rewrites off, Magento puts the entry script into every link,
+     * naming it after SCRIPT_FILENAME (Store::_updatePathUseRewrites). Under
+     * cron/CLI that's bin/magento, so links come out as /magento/foo.html and
+     * 404. Map them back to the storefront's index.php.
+     *
+     * @return array<string, string> wrong link prefix => storefront link prefix
+     */
+    private function getLinkPrefixes(StoreInterface $store): array
+    {
+        $script = basename((string) $this->request->getServer('SCRIPT_FILENAME'));
+        if ($script === '' || $script === 'index.php' || $store->getConfig(Store::XML_PATH_USE_REWRITES)) {
+            return [];
+        }
+
+        $prefixes = [];
+        foreach ([Store::XML_PATH_UNSECURE_BASE_LINK_URL, Store::XML_PATH_SECURE_BASE_LINK_URL] as $path) {
+            $baseLinkUrl = (string) $store->getConfig($path);
+            $prefixes[$baseLinkUrl . $script . '/'] = $baseLinkUrl . 'index.php/';
+        }
+        return $prefixes;
+    }
+
+    private function fixLink(string $url): string
+    {
+        foreach ($this->linkPrefixes as $wrong => $right) {
+            if (strpos($url, $wrong) === 0) {
+                return $right . substr($url, strlen($wrong));
+            }
+        }
+        return $url;
     }
 
     private function validateImageUrl($imageUrl)

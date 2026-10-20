@@ -159,7 +159,7 @@ class Generator
         $this->write($handle, "<?xml version='1.0'?>
 <rss version ='2.0' xmlns:g='http://base.google.com/ns/1.0'>
 <channel>
-<title><![CDATA[" . $store->getName() . "]]></title>
+<title>" . $this->cdata($store->getName()) . "</title>
 <link>" . $store->getBaseUrl() . "</link>");
 
         $lastId = 0;
@@ -220,32 +220,26 @@ class Generator
             $price = $product->getPrice();
             $finalPrice = $product->getFinalPrice();
 
-            $description = $product->getDescription();
-            if (!is_string($description)) {
-                $description = '';
-            }
-
+            // Description is stored as editor/Page Builder HTML; the feed wants plain text.
+            $description = $this->toPlainText($product->getDescription());
             if ($description === '') {
-                $shortDescription = $product->getShortDescription();
-                if (is_string($shortDescription)) {
-                    $description = $shortDescription;
-                }
+                $description = $this->toPlainText($product->getShortDescription());
             }
 
             $this->write($handle, "<item>
-                    <g:id><![CDATA[" . $product->getSku() . "]]></g:id>
-                    <magento_product_id><![CDATA[" . $product->getId() . "]]></magento_product_id>
-                    <title><![CDATA[" . $product->getName() . "]]></title>
-                    <link><![CDATA[" . $productUrl . "]]></link>
+                    <g:id>" . $this->cdata($product->getSku()) . "</g:id>
+                    <magento_product_id>" . $this->cdata($product->getId()) . "</magento_product_id>
+                    <title>" . $this->cdata($product->getName()) . "</title>
+                    <link>" . $this->cdata($productUrl) . "</link>
                     <g:price>" . (!empty($price) ? number_format($price, 2) . " " . $store->getCurrentCurrency()->getCode() : '') . "</g:price>
                     <g:sale_price>" . (!empty($finalPrice) ? number_format($finalPrice, 2) . " " . $store->getCurrentCurrency()->getCode() : '') . "</g:sale_price>
-                    <description><![CDATA[" . $description . "]]></description>
+                    <description>" . $this->cdata($description) . "</description>
                     <g:condition>new</g:condition>
-                    <g:image_link><![CDATA[" . $imageLink . "]]></g:image_link>
-                    <g:brand><![CDATA[" . $brand . "]]></g:brand>
-                    <g:mpn><![CDATA[" . ($product->hasData('mpn') ? $product->getData('mpn') : $product->getSku()) . "]]></g:mpn>
-                    <g:gtin><![CDATA[" . ($product->hasData('gtin') ? $product->getData('gtin') : ($product->hasData('upc') ? $product->getData('upc') : '')) . "]]></g:gtin>
-                    <g:product_type><![CDATA[" . $product->getTypeID() . "]]></g:product_type>
+                    <g:image_link>" . $this->cdata($imageLink) . "</g:image_link>
+                    <g:brand>" . $this->cdata($brand) . "</g:brand>
+                    <g:mpn>" . $this->cdata($product->hasData('mpn') ? $product->getData('mpn') : $product->getSku()) . "</g:mpn>
+                    <g:gtin>" . $this->cdata($product->hasData('gtin') ? $product->getData('gtin') : ($product->hasData('upc') ? $product->getData('upc') : '')) . "</g:gtin>
+                    <g:product_type>" . $this->cdata($product->getTypeID()) . "</g:product_type>
                     <g:shipping>
                     <g:country>UK</g:country>
                     <g:service>Standard Free Shipping</g:service>
@@ -255,7 +249,7 @@ class Generator
             $categoryCollection = $product->getCategoryCollection();
             if (count($categoryCollection) > 0) {
                 foreach ($categoryCollection as $category) {
-                    $this->write($handle, "<g:google_product_category><![CDATA[" . $category->getName() . "]]></g:google_product_category>");
+                    $this->write($handle, "<g:google_product_category>" . $this->cdata($category->getName()) . "</g:google_product_category>");
                 }
             }
 
@@ -271,6 +265,38 @@ class Generator
 
             $this->write($handle, "</item>");
         }
+    }
+
+    /**
+     * Reduce editor/Page Builder HTML to a single line of plain text.
+     */
+    private function toPlainText($html): string
+    {
+        if (!is_string($html) || $html === '') {
+            return '';
+        }
+
+        $html = mb_scrub($html, 'UTF-8');
+        $text = preg_replace('#<(style|script)\b[^>]*>.*?</\1>#is', ' ', $html) ?? $html;
+        $text = preg_replace('#<(br|/p|/div|/li|/h[1-6]|/tr|/td|/th)\b[^>]*>#i', ' ', $text) ?? $text;
+        $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return trim(preg_replace('/\s+/u', ' ', $text) ?? $text);
+    }
+
+    /**
+     * Wrap a value in CDATA. A literal "]]>" would end the section early and
+     * break the whole feed, so split it across two sections. Characters XML 1.0
+     * forbids anywhere (most C0 controls) are dropped for the same reason.
+     */
+    private function cdata($value): string
+    {
+        // Objects with __toString (e.g. Magento\Framework\Phrase from getAttributeText()) are text too.
+        $value = (is_scalar($value) || (is_object($value) && method_exists($value, '__toString')))
+            ? mb_scrub((string) $value, 'UTF-8')
+            : '';
+        $value = preg_replace('/[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/u', '', $value) ?? '';
+        return '<![CDATA[' . str_replace(']]>', ']]]]><![CDATA[>', $value) . ']]>';
     }
 
     /**

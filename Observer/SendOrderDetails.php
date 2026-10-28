@@ -18,6 +18,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
     private $imageHelper;
     private $configProductModel;
     private $groupedProductModel;
+    private $orderDateHelper;
 
     public function __construct(
         Reviews\Helper\Config $config,
@@ -25,7 +26,8 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
         Catalog\Model\ProductFactory $product,
         Catalog\Helper\Image $image,
         ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable $configurable,
-        GroupedProduct\Model\Product\Type\Grouped $grouped
+        GroupedProduct\Model\Product\Type\Grouped $grouped,
+        Reviews\Helper\OrderDate $orderDateHelper
     ) {
         $this->configHelper = $config;
         $this->apiModel = $api;
@@ -33,6 +35,7 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
         $this->imageHelper = $image;
         $this->configProductModel = $configurable;
         $this->groupedProductModel = $grouped;
+        $this->orderDateHelper = $orderDateHelper;
     }
 
     public function execute(Framework\Event\Observer $observer)
@@ -116,15 +119,25 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                     $name = $order->getBillingAddress()->getFirstName();
                 }
 
-                $productResponse = $this->apiModel->apiPost('invitation', [
+                $invitation = [
                     'source'       => 'magento',
                     'name'         => $name,
                     'email'        => $order->getCustomerEmail(),
                     'order_id'     => $order->getRealOrderId(),
                     'country_code' => $order->getShippingAddress()->getCountryId(),
                     'phone'        => $order->getBillingAddress()->getTelephone(),
-                    'products'     => $p
-                ], $magento_store_id);
+                    'products'     => $p,
+                ];
+
+                // Original order creation date only (not payment/fulfilment/update).
+                // Omitted when missing so the collector can ask at flagged stores.
+                $orderDate = $this->orderDateHelper->fromCreatedAt($order->getCreatedAt());
+                if ($orderDate !== null) {
+                    $invitation['order_date'] = $orderDate;
+                    $invitation['order_date_source'] = 'magento';
+                }
+
+                $productResponse = $this->apiModel->apiPost('invitation', $invitation, $magento_store_id);
 
                 $this->apiModel->addStatusMessage($productResponse, "Product Review Invitation");
 

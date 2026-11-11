@@ -19,6 +19,16 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
     private $configProductModel;
     private $groupedProductModel;
 
+    /**
+     * Order IDs already sent by the "completed" trigger in this PHP process.
+     * Magento does not refresh getOrigData() after a save, so an order object
+     * that is saved twice in one request would otherwise look "newly complete"
+     * both times.
+     *
+     * @var array<int|string, bool>
+     */
+    private $completedOrdersSent = [];
+
     public function __construct(
         Reviews\Helper\Config $config,
         Reviews\Model\Api $api,
@@ -63,11 +73,39 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                     $state = null;
                 }
 
-                if ($state === \Magento\Sales\Model\Order::STATE_COMPLETE) {
+                if ($state === \Magento\Sales\Model\Order::STATE_COMPLETE && $this->hasJustCompleted($order)) {
                     $this->dispatchNotification($order);
                 }
             }
         }
+    }
+
+    /**
+     * True only for the save that moves the order into the "complete" state.
+     *
+     * sales_order_save_after fires on every save of an order, including saves
+     * that do not touch the state (an order comment, or a customer changing
+     * their account email, which re-saves all their past orders). Those orders
+     * were loaded as "complete", so their original state is already "complete"
+     * and they must not queue another invitation.
+     */
+    private function hasJustCompleted($order)
+    {
+        if ($order->getOrigData('state') === \Magento\Sales\Model\Order::STATE_COMPLETE) {
+            return false;
+        }
+
+        $orderId = $order->getId();
+        if ($orderId === null) {
+            return true;
+        }
+
+        if (isset($this->completedOrdersSent[$orderId])) {
+            return false;
+        }
+        $this->completedOrdersSent[$orderId] = true;
+
+        return true;
     }
 
     public function dispatchNotification($order)

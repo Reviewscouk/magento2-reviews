@@ -116,12 +116,14 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                     $name = $order->getBillingAddress()->getFirstName();
                 }
 
+                $shippingAddress = $order->getShippingAddress();
+
                 $productResponse = $this->apiModel->apiPost('invitation', [
                     'source'       => 'magento',
                     'name'         => $name,
                     'email'        => $order->getCustomerEmail(),
                     'order_id'     => $order->getRealOrderId(),
-                    'country_code' => $order->getShippingAddress()->getCountryId(),
+                    'country_code' => $shippingAddress ? $shippingAddress->getCountryId() : $order->getBillingAddress()->getCountryId(),
                     'phone'        => $order->getBillingAddress()->getTelephone(),
                     'products'     => $p
                 ], $magento_store_id);

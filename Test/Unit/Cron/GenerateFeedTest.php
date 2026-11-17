@@ -16,10 +16,10 @@ class GenerateFeedTest extends TestCase
     /** @var Generator|MockObject */
     private $generator;
 
-    /** @var StoreManagerInterface|MockObject */
+    /** @var StoreManagerInterface */
     private $storeManager;
 
-    /** @var Config|MockObject */
+    /** @var Config */
     private $configHelper;
 
     /** @var LoggerInterface|MockObject */
@@ -31,8 +31,8 @@ class GenerateFeedTest extends TestCase
     protected function setUp(): void
     {
         $this->generator = $this->createMock(Generator::class);
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->configHelper = $this->createMock(Config::class);
+        $this->storeManager = $this->createStub(StoreManagerInterface::class);
+        $this->configHelper = $this->createStub(Config::class);
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->cron = new GenerateFeed(
@@ -139,11 +139,11 @@ class GenerateFeedTest extends TestCase
     }
 
     /**
-     * @return StoreInterface|MockObject
+     * @return StoreInterface
      */
     private function createStore(int $id, string $code)
     {
-        $store = $this->createMock(StoreInterface::class);
+        $store = $this->createStub(StoreInterface::class);
         $store->method('getId')->willReturn($id);
         $store->method('getCode')->willReturn($code);
         return $store;

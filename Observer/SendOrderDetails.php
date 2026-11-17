@@ -134,7 +134,6 @@ class SendOrderDetails implements Framework\Event\ObserverInterface
                 $orderDate = $this->orderDateHelper->fromCreatedAt($order->getCreatedAt());
                 if ($orderDate !== null) {
                     $invitation['order_date'] = $orderDate;
-                    $invitation['order_date_source'] = 'magento';
                 }
 
                 $productResponse = $this->apiModel->apiPost('invitation', $invitation, $magento_store_id);

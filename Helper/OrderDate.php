@@ -19,8 +19,13 @@ class OrderDate
         }
 
         try {
-            $date = new \DateTimeImmutable(trim($createdAt), new \DateTimeZone('UTC'));
+            $date = (new \DateTimeImmutable(trim($createdAt), new \DateTimeZone('UTC')))
+                ->setTimezone(new \DateTimeZone('UTC'));
         } catch (\Exception $e) {
+            return null;
+        }
+
+        if ((int) $date->format('Y') < 1000) {
             return null;
         }
 

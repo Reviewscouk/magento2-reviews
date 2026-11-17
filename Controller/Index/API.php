@@ -17,6 +17,7 @@ class API extends Framework\App\Action\Action
     private $stockModel;
     private $imageHelper;
     private $storeModel;
+    private $productCollectionFactory;
 
     public function __construct(
         Framework\App\Action\Context $context,
@@ -57,6 +58,8 @@ class API extends Framework\App\Action\Action
 
     public function execute()
     {
+        /** @var Framework\App\Response\Http $response */
+        $response = $this->getResponse();
         ob_start();
         set_time_limit(0);
 
@@ -66,14 +69,20 @@ class API extends Framework\App\Action\Action
 
         if ($productFeedEnabled) {
 
-            $auth['page'] = !empty($_GET['page']) ? $_GET['page'] : '1';
-            $auth['per_page'] = !empty($_GET['per_page']) ? (int) $_GET['per_page'] : 100;
-            $auth['submitted_key'] = !empty($_GET['key']) ? $_GET['key'] : '';
+            /** @var Framework\App\Request\Http $request */
+            $request = $this->getRequest();
+            $page = $request->getQuery('page');
+            $perPage = $request->getQuery('per_page');
+            $key = $request->getQuery('key');
+            $auth['page'] = !empty($page) ? $page : '1';
+            $auth['per_page'] = !empty($perPage) ? (int) $perPage : 100;
+            $auth['submitted_key'] = !empty($key) ? $key : '';
 
             //Authenticate
             if(!isset($auth['submitted_key'], $auth['actual_key']) || $auth['actual_key'] != $auth['submitted_key']) {
-              echo json_encode(array('success' => false, 'message' => 'Unauthenticated.'));
-              die();
+                return $response->setBody(
+                    json_encode(['success' => false, 'message' => 'Unauthenticated.'])
+                );
             }
 
             $products = $this->getProductCollection($auth['page'], $auth['per_page']);
@@ -120,12 +129,14 @@ class API extends Framework\App\Action\Action
                 $collection[] = $item;
             }
 
-            echo json_encode(array('success' => true, 'products' => $collection, 'total' => count($collection)));
-            die();
+            return $response->setBody(
+                json_encode(['success' => true, 'products' => $collection, 'total' => count($collection)])
+            );
 
         } else {
-          echo json_encode(array('success' => false, 'message' => 'API disabled.'));
-          die();
+            return $response->setBody(
+                json_encode(['success' => false, 'message' => 'API disabled.'])
+            );
         }
     }
 }
